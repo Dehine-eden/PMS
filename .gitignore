@@ -1,0 +1,20 @@
+# Build / publish outputs
+bin/
+obj/
+*.user
+*.vs
+.vscode/
+
+# Secrets
+appsettings.json
+secrets.json
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
