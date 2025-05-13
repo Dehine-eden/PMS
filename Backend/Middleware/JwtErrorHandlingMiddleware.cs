@@ -1,15 +1,19 @@
 ﻿using System.Net;
 using System.Text.Json;
+// using Microsoft.AspNetCore.Http;
+// using Microsoft.Extenstions.Logging;
 
 namespace ProjectManagementSystem1.Middleware
 {
     public class JwtErrorHandlingMiddleware
     {
         private readonly RequestDelegate _next;
+        // private readonly ILogger<JwtErrorHandlingMIddleWare> _logger;
 
-        public JwtErrorHandlingMiddleware(RequestDelegate next)
+        public JwtErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
         {
             _next = next;
+            // _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -20,8 +24,9 @@ namespace ProjectManagementSystem1.Middleware
             }
             catch (Exception ex)
             {
+                // _logger.LogError(ex, "Unhandled exception occurred. ");
                 context.Response.ContentType = "application/json";
-
+                
                 var statusCode = ex switch
                 {
                     UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
@@ -39,6 +44,7 @@ namespace ProjectManagementSystem1.Middleware
                     statusCode = statusCode
                 };
 
+                // var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var json = JsonSerializer.Serialize(errorResponse);
                 await context.Response.WriteAsync(json);
             }
