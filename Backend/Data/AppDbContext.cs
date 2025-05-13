@@ -9,6 +9,7 @@ namespace ProjectManagementSystem1.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public DbSet<UserAccessToken> UserAccessTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Project> Projects { get; set; }
 
         // If you have other tables like RefreshTokens:
         //public DbSet<RefreshToken> RefreshTokens { get; set; }
