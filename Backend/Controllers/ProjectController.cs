@@ -19,7 +19,7 @@ namespace ProjectManagementSystem1.Controllers
         }
 
         // GET: api/project
-        [HttpGet]
+        [HttpGet("All-projects")]
         public async Task<IActionResult> GetAll()
         {
             var projects = await _projectService.GetAllAsync();
@@ -27,7 +27,7 @@ namespace ProjectManagementSystem1.Controllers
         }
 
         // GET: api/project/{id}
-        [HttpGet("{id}")]
+        [HttpGet("project-byId")]
         public async Task<IActionResult> GetById(int id)
         {
             var project = await _projectService.GetByIdAsync(id);
@@ -37,7 +37,7 @@ namespace ProjectManagementSystem1.Controllers
         }
 
         // POST: api/project
-        [HttpPost]
+        [HttpPost("create-project")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Create([FromBody] CreateProjectDto dto)
         {
@@ -47,7 +47,7 @@ namespace ProjectManagementSystem1.Controllers
         }
 
         // PUT: api/project/{id}
-        [HttpPut("{id}")]
+        [HttpPut("edit-project")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectDto dto)
         {
@@ -59,7 +59,7 @@ namespace ProjectManagementSystem1.Controllers
         }
 
         // DELETE: api/project/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("delete-project")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Delete(int id)
         {

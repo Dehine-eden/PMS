@@ -10,6 +10,8 @@ namespace ProjectManagementSystem1.Data
         public DbSet<UserAccessToken> UserAccessTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
+
 
         // If you have other tables like RefreshTokens:
         //public DbSet<RefreshToken> RefreshTokens { get; set; }
