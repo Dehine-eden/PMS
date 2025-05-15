@@ -47,6 +47,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<IProjectAssignmentService, ProjectAssignmentService>();
 
 
 // Add services to the container.

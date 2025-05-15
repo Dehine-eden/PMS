@@ -5,8 +5,8 @@ namespace ProjectManagementSystem1.Model.Entities
 {
     public class ApplicationUser : IdentityUser
     {
-        public string FullName { get; set; }
-
+        public string FullName { get; set; } 
+        
         public string EmployeeId { get; set; }
         public string Department { get; set; }
         public string Title { get; set; }
