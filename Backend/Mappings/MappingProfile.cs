@@ -29,7 +29,6 @@ namespace ProjectManagementSystem1.Mappings
             // User mappings
             CreateMap<User, LoginRequestDto>().ReverseMap();
             CreateMap<User, RegisterUserDto>().ReverseMap();
-            // CreateMap<User, UpdateUserDto>().ReverseMap();
         }
     }
 }
