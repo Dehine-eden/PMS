@@ -1,34 +1,57 @@
+﻿using ProjectManagementSystem1.Model.Entities;
 using System.ComponentModel.DataAnnotations;
-using System;
-using ProjectManagementSystem1.Model.Enums;
 
-namespace ProjectManagementSystem1.Model.Dtos
+namespace ProjectManagementSystem1.Model.Dto.ProjectTaskDto
 {
-public class CreateProjectTaskDto
-{
-    public int? ProjectId { get; set; }
-    public int? MemberId { get; set; }
-    public double? Weight { get; set; }
-    [Required]
-    [StringLength(100, ErrorMessage = "Task title can't be longer than 100 characters.")]
-    public required string Title { get; set; }
+    public class CreateProjectTaskDto
+    {
+        [Required]
+        public int ProjectId { get; set; }
+        //public int ProjectId { get; set; }
 
-    [StringLength(1000, ErrorMessage = "Task description can't be longer than 1000 characters.")]
+        [Display(Name = "Optional. Omit or set to null for no parent task.")]
+        public Guid? ParentTaskId { get; set; } 
+
+        [Required, MaxLength(250)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(2000)]
         public string? Description { get; set; }
 
-    [Required]
-    public DateTime CreatedDate { get; set; }
-        
-    [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "Assigned user ID must be valid.")]
-    public int AssignedUserId { get; set; }
+        [Required]
+        public DateTime DueDate { get; set; }
 
-    [Required]
-    [EnumDataType(typeof(ProjectTaskPriority))]
-    public ProjectTaskPriority Priority { get; set; } = ProjectTaskPriority.Medium;
+        [Range(0, 100)]
+        public decimal Weight { get; set; } = 0;
 
-    [EnumDataType(typeof(ProjectTaskStatus))]
-    public ProjectTaskStatus Status { get; set; } = ProjectTaskStatus.ToDo;
+        //[Required]
+        public Entities.TaskStatus Status { get; set; } = Entities.TaskStatus.New;
+
+        [Required]
+        public AssignmentStatus AssignmentStatus { get; set; } = AssignmentStatus.Pending;
+
+        public DateTime? AssignmentUpdatedDate { get; set; }
+
+        [MaxLength(1000)]
+        public string? RejectionReason { get; set; }
+
+        [Required]
+        public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
+
+        public double? EstimatedHours { get; set; }
+
+        public double? ActualHours { get; set; }
+
+        [Required]
+        public string EmployeeId { get; set; }
+        //public string AssignedMemberId { get; set; }
+        //public bool IsAssignedBySupervisor { get; set; }
+
+        public int Depth { get; set; } = 0;
+
+        public bool IsLeaf { get; set; } = true;
+
+        public decimal Progress { get; set; }
+    }
+
 }
-}
-// This class is used to create a new project in the system. It contains properties for the project name, owner, priority, due date, and status. The properties are used to capture the necessary information when creating a new project. The class is typically used in conjunction with a controller action that handles the creation of a new project in the database.

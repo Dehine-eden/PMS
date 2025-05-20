@@ -1,17 +1,49 @@
-using ProjectManagementSystem1.Model.Enums;
+﻿using ProjectManagementSystem1.Model.Entities;
+using System.ComponentModel.DataAnnotations;
+using TaskStatus = ProjectManagementSystem1.Model.Entities.TaskStatus;
 
-namespace ProjectManagementSystem1.Model.Dtos
+namespace ProjectManagementSystem1.Model.Dto.ProjectTaskDto
 {
     public class UpdateProjectTaskDto
     {
-        internal readonly int Id;
-        public ProjectTaskStatus LastUsedStatus { get; set; }
-        public required string Descriptions { get; set; }
-        public ProjectTaskPriority LastUsedPriority { get; set;}
-        public required string Title { get; set; }
+        [Required]
+        public Guid Id { get; set; }
+
+        public Guid? ParentTaskId { get; set; }
+
+        [MaxLength(250)]
+        public string? Title { get; set; }
+
+        [MaxLength(2000)]
+        public string? Description { get; set; }
+
         public DateTime? DueDate { get; set; }
-        public double? Weight { get; set; }
-        public required string UpdateUser { get; set; }
-          public byte[]? Version { get; set; } 
+
+        [Range(0, 100)]
+        public decimal? Weight { get; set; }
+
+        public TaskStatus? Status { get; set; }
+
+        public AssignmentStatus? AssignmentStatus { get; set; }
+
+        public DateTime? AssignmentUpdatedDate { get; set; }
+
+        [MaxLength(1000)]
+        public string? RejectionReason { get; set; }
+
+        public PriorityLevel? Priority { get; set; }
+
+        public double? EstimatedHours { get; set; }
+
+        public double? ActualHours { get; set; }
+
+        //[Required]
+        public string? EmployeeId { get; set; }
+        public int? Depth { get; set; }
+
+        public bool? IsLeaf { get; set; }
+
+        public decimal? Progress { get; set; }
     }
+
 }
