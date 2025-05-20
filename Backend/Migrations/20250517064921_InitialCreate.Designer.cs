@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem1.Data;
 
@@ -11,9 +12,11 @@ using ProjectManagementSystem1.Data;
 namespace ProjectManagementSystem1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517064921_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,13 +392,14 @@ namespace ProjectManagementSystem1.Migrations
                     b.Property<double?>("ActualHours")
                         .HasColumnType("float");
 
-                    b.Property<string>("AssignedMemberId")
+                    b.Property<int?>("AssignedMemberId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AssigneeId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AssignmentStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("AssignmentUpdatedDate")
                         .HasColumnType("datetime2");
@@ -404,6 +408,7 @@ namespace ProjectManagementSystem1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Depth")
@@ -446,9 +451,7 @@ namespace ProjectManagementSystem1.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -459,6 +462,7 @@ namespace ProjectManagementSystem1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedDate")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<byte[]>("Version")
@@ -471,7 +475,7 @@ namespace ProjectManagementSystem1.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedMemberId");
+                    b.HasIndex("AssigneeId");
 
                     b.HasIndex("ParentTaskId");
 
@@ -620,7 +624,7 @@ namespace ProjectManagementSystem1.Migrations
                 {
                     b.HasOne("ProjectManagementSystem1.Model.Entities.ApplicationUser", "Assignee")
                         .WithMany()
-                        .HasForeignKey("AssignedMemberId");
+                        .HasForeignKey("AssigneeId");
 
                     b.HasOne("ProjectManagementSystem1.Model.Entities.ProjectTask", "ParentTask")
                         .WithMany("SubTasks")
