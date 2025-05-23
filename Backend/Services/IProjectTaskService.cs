@@ -1,4 +1,4 @@
-﻿using ProjectManagementSystem1.Model.Dto.ProjectTaskDto;
+﻿using ProjectManagementSystem1.Model.Dto;
 using ProjectManagementSystem1.Model.Entities;
 using System.Threading.Tasks;
 
@@ -6,15 +6,21 @@ namespace ProjectManagementSystem1.Services
 {
     public interface IProjectTaskService
     {
-        Task<IEnumerable<ProjectTaskDto>> GetAllAsync();
+        Task<ProjectTask> CreateTaskAsync(ProjectTaskCreateDto dto);
+        Task<List<ProjectTask>> GetAllTasksAsync();
+        Task<ProjectTask> GetTaskByIdAsync(int taskId);
+        Task ValidateParentTaskAsync(int? parentTaskId, int projectAssignmentId);
+        Task ValidateMemberAssignmentAsync(string? memberId, int projectAssignmentId);
+        Task<ProjectTask> AddSubtaskAsync(int parentTaskId, ProjectTaskCreateDto dto);
+        Task AssignTaskAsync(int taskId, string memberId);
+        Task<bool> DeleteTaskAsync(int taskId);
 
-        Task<ProjectTaskDto?> GetByIdAsync(Guid id);
 
-        Task<ProjectTaskDto> CreateAsync(CreateProjectTaskDto createDto);
-        //Task<bool> AssignTaskToUserAsync(Guid taskId, int assigneeId, string supervisorId)
-
-        Task<bool> UpdateAsync(UpdateProjectTaskDto updateDto);
-        Task<bool> DeleteAsync(Guid id);
+        //Task ValidateCircularReferenceAsync(int taskId, int? parentTaskId);
+        //Task<ProjectTaskReadDto> GetTaskByIdAsync(int taskId);
+        //Task<IEnumerable<ProjectTaskReadDto>> GetAllTasksAsync();
+        //Task<ProjectTaskReadDto> UpdateTaskAsync(int id, ProjectTaskUpdateDto dto);
+        //Task<bool> DeleteTaskAsync(int taskId);
     }
-
 }
+

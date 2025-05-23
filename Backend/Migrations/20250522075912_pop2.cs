@@ -5,7 +5,7 @@
 namespace ProjectManagementSystem1.Migrations
 {
     /// <inheritdoc />
-    public partial class Third : Migration
+    public partial class pop2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,3 +20,5 @@ namespace ProjectManagementSystem1.Migrations
         }
     }
 }
+
+

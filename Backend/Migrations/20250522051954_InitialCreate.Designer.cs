@@ -12,8 +12,8 @@ using ProjectManagementSystem1.Data;
 namespace ProjectManagementSystem1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250519092238_Second")]
-    partial class Second
+    [Migration("20250522051954_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -385,102 +385,61 @@ namespace ProjectManagementSystem1.Migrations
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.ProjectTask", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<double?>("ActualHours")
-                        .HasColumnType("float");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AssignedMemberId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AssignmentStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("AssignmentUpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Depth")
                         .HasColumnType("int");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<DateTime>("DueDate")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double?>("EstimatedHours")
+                    b.Property<double>("EstimatedHours")
                         .HasColumnType("float");
-
-                    b.Property<bool>("IsAssignedBySupervisor")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsLeaf")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("ParentTaskId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("ParentTaskId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Progress")
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<double>("Progress")
+                        .HasColumnType("float");
 
                     b.Property<int>("ProjectAssignmentId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedDate")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<decimal>("Weight")
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AssignedMemberId");
 
                     b.HasIndex("ParentTaskId");
 
                     b.HasIndex("ProjectAssignmentId");
-
-                    b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectTasks");
                 });
@@ -621,10 +580,6 @@ namespace ProjectManagementSystem1.Migrations
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.ProjectTask", b =>
                 {
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.ApplicationUser", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssignedMemberId");
-
                     b.HasOne("ProjectManagementSystem1.Model.Entities.ProjectTask", "ParentTask")
                         .WithMany("SubTasks")
                         .HasForeignKey("ParentTaskId")
@@ -633,18 +588,10 @@ namespace ProjectManagementSystem1.Migrations
                     b.HasOne("ProjectAssignment", "ProjectAssignment")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectAssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId");
-
-                    b.Navigation("Assignee");
-
                     b.Navigation("ParentTask");
-
-                    b.Navigation("Project");
 
                     b.Navigation("ProjectAssignment");
                 });

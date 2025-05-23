@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagementSystem1.Model.Entities;
+using System.Reflection.Emit;
 
 namespace ProjectManagementSystem1.Data
 {
@@ -17,30 +18,32 @@ namespace ProjectManagementSystem1.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            // ProjectTask relationships
+            modelBuilder.Entity<ProjectTask>(entity =>
+            {
+                // Link to ProjectAssignment (required)
+                entity.HasOne(t => t.ProjectAssignment)
+                            .WithMany(pa => pa.Tasks) // Add this navigation property
+                            .HasForeignKey(t => t.ProjectAssignmentId)
+                            .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Status)
-                .HasDefaultValue(ProjectManagementSystem1.Model.Entities.TaskStatus.New);
+                // Self-referential hierarchy
+                entity.HasOne(t => t.ParentTask)
+                    .WithMany(t => t.SubTasks)
+                    .HasForeignKey(t => t.ParentTaskId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.AssignmentStatus)
-                .HasDefaultValue(AssignmentStatus.Pending);
-            // One ProjectAssignment -> Many ProjectTasks
-            modelBuilder.Entity<ProjectTask>()
-                .HasOne(t => t.ProjectAssignment)
-                .WithMany(a => a.Tasks)
-                .HasForeignKey(t => t.ProjectAssignmentId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Prevent circular references via SQL trigger (optional)
+            //entity.HasCheckConstraint("CK_NoSelfReference", "ParentTaskId <> Id");
 
-            
-            // One Task -> Many SubTasks (Self-refrencing)
-            modelBuilder.Entity<ProjectTask>()
-                .HasOne(t => t.ParentTask)
-                .WithMany(t => t.SubTasks)
-                .HasForeignKey(t => t.ParentTaskId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(false);
+            //// Limit hierarchy depth
+            //entity.HasCheckConstraint("CK_MaxDepth", "Depth BETWEEN 0 AND 10");
+
+       
+
         }
+
 
         // If you have other tables like RefreshTokens:
         //public DbSet<RefreshToken> RefreshTokens { get; set; }
