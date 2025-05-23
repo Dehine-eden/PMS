@@ -3,7 +3,6 @@ using Humanizer;
 using ProjectManagementSystem1.Model.Dto;
 using ProjectManagementSystem1.Model.Dto.ProjectAssignmentDto;
 using ProjectManagementSystem1.Model.Dto.ProjectManagementDto;
-using ProjectManagementSystem1.Model.Dto.ProjectTaskDto;
 using ProjectManagementSystem1.Model.Entities;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -31,35 +30,28 @@ namespace ProjectManagementSystem1.Helpers
             //    .ForMember(dest => dest.AssignmentStatus, opt => opt.MapFrom(src => src.AssignmentStatus.ToString()))
             //    .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()));
 
-             CreateMap<ProjectTask, ProjectTaskDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            .ForMember(dest => dest.AssignmentStatus, opt => opt.MapFrom(src => src.AssignmentStatus.ToString()))
-            .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()))
-            .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.Assignee != null ? src.Assignee.EmployeeId : null))
-            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
-            .ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => src.UpdatedDate))
-            .ForMember(dest => dest.RejectionReason, opt => opt.MapFrom(src => src.RejectionReason));
+    //        CreateMap<ProjectTask, ProjectTaskReadDto>()
+    //       .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+    //       .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()));
 
-            CreateMap<CreateProjectTaskDto, ProjectTask>()
-            .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore()) // Set manually in service
-            .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore()) // Set manually in service
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
-            .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore());
-            //.ForMember(dest => dest.Id, opt => opt.Ignore())
-            //.ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
-            //.ForMember(dest => dest.UpdatedDate, opt => opt.Ignore());
+    //        CreateMap<ProjectTaskCreateDto, ProjectTask>()
+    //        .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore()) // Set manually in service
+    //        .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore()) // Set manually in service
+    //        .ForMember(dest => dest.Id, opt => opt.Ignore())
+    //        .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+    //        .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+    //        //.ForMember(dest => dest.Id, opt => opt.Ignore())
+    //        //.ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+    //        //.ForMember(dest => dest.UpdatedDate, opt => opt.Ignore());
 
-            CreateMap<ProjectTask, CreateProjectTaskDto>()
-                            .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.AssignedMemberId.ToString()));// Set manually in service
-
-            CreateMap<UpdateProjectTaskDto, ProjectTask>()
-              .ForMember(dest => dest.Id, opt => opt.Ignore())
-              .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore())
-              .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore())
-               .ForAllMembers(opts => opts.Condition((src, dest, srcMember) =>
-        srcMember != null // Only update fields that are NOT null in the DTO
-    ));
+    //        CreateMap<ProjectTask, ProjectTaskCreateDto>();
+    //        CreateMap<ProjectTaskUpdateDto, ProjectTask>()
+    //          .ForMember(dest => dest.Id, opt => opt.Ignore())
+    //          .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore())
+    //          .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore())
+    //           .ForAllMembers(opts => opts.Condition((src, dest, srcMember) =>
+    //    srcMember != null // Only update fields that are NOT null in the DTO
+    //));
         }
 
     }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectManagementSystem1.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Second : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -278,58 +278,44 @@ namespace ProjectManagementSystem1.Migrations
                 name: "ProjectTasks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProjectAssignmentId = table.Column<int>(type: "int", nullable: false),
-                    ParentTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Weight = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    AssignedMemberId = table.Column<int>(type: "int", nullable: true),
-                    AssignmentStatus = table.Column<int>(type: "int", nullable: false),
-                    AssignmentUpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RejectionReason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Priority = table.Column<int>(type: "int", nullable: false),
-                    EstimatedHours = table.Column<double>(type: "float", nullable: true),
-                    ActualHours = table.Column<double>(type: "float", nullable: true),
+                    ProjectAssignmentId = table.Column<int>(type: "int", nullable: false),
+                    AssignedMemberId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ParentTaskId = table.Column<int>(type: "int", nullable: true),
                     Depth = table.Column<int>(type: "int", nullable: false),
                     IsLeaf = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    ProjectId = table.Column<int>(type: "int", nullable: true),
-                    AssigneeId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    IsAssignedBySupervisor = table.Column<bool>(type: "bit", nullable: false),
-                    Progress = table.Column<decimal>(type: "decimal(5,2)", nullable: false)
+                    Weight = table.Column<int>(type: "int", nullable: false),
+                    Priority = table.Column<int>(type: "int", nullable: false),
+                    Progress = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EstimatedHours = table.Column<double>(type: "float", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ProjectAssignmentId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProjectTasks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProjectTasks_AspNetUsers_AssigneeId",
-                        column: x => x.AssigneeId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_ProjectTasks_ProjectAssignments_ProjectAssignmentId",
                         column: x => x.ProjectAssignmentId,
                         principalTable: "ProjectAssignments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectTasks_ProjectAssignments_ProjectAssignmentId1",
+                        column: x => x.ProjectAssignmentId1,
+                        principalTable: "ProjectAssignments",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ProjectTasks_ProjectTasks_ParentTaskId",
                         column: x => x.ParentTaskId,
                         principalTable: "ProjectTasks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProjectTasks_Projects_ProjectId",
-                        column: x => x.ProjectId,
-                        principalTable: "Projects",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -382,11 +368,6 @@ namespace ProjectManagementSystem1.Migrations
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProjectTasks_AssigneeId",
-                table: "ProjectTasks",
-                column: "AssigneeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProjectTasks_ParentTaskId",
                 table: "ProjectTasks",
                 column: "ParentTaskId");
@@ -397,9 +378,9 @@ namespace ProjectManagementSystem1.Migrations
                 column: "ProjectAssignmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProjectTasks_ProjectId",
+                name: "IX_ProjectTasks_ProjectAssignmentId1",
                 table: "ProjectTasks",
-                column: "ProjectId");
+                column: "ProjectAssignmentId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",

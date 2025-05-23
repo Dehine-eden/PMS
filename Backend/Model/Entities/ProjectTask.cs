@@ -1,140 +1,105 @@
-﻿using ProjectManagementSystem1.Model.Entities;
+﻿using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace ProjectManagementSystem1.Model.Entities
 {
-    public enum TaskStatus { New, InProgress, Blocked, Completed }
-    public enum AssignmentStatus { Pending, Accepted, Rejected }
-    public enum PriorityLevel { Low = 0, Medium = 1, High = 2, Critical = 3 }
+    public enum TaskStatus { Pending, Accepted, Rejected }
+    public enum TaskPriority { Low, Medium, High, Critical }
 
-    public class ProjectTask
+    public class ProjectTask : IValidatableObject
     {
         [Key]
-        public Guid Id { get; set; }
-
-        [Required]
-        public int ProjectAssignmentId { get; set; }
-
-        [ForeignKey("ProjectAssignmentId")]
-        public ProjectAssignment ProjectAssignment { get; set; }  // <-- navigation property
-
-        [ForeignKey("ParentTask")]
-        public Guid? ParentTaskId { get; set; }
+        public int Id { get; set; }
 
         [Required, MaxLength(250)]
         public string Title { get; set; } = string.Empty;
 
-        [MaxLength(2000)]
-        public string Description { get; set; } = string.Empty;
-
-        [DataType(DataType.Date)]
-        [CustomValidation(typeof(DueDateValidator), nameof(DueDateValidator.ValidateDueDate))]
-        public DateTime DueDate { get; set; }
-
-        [Column(TypeName = "decimal(5,2)"), Range(0, 100)]
-        public decimal Weight { get; set; } = 0;
-
-        //[Required]
-        public TaskStatus Status { get; set; } = TaskStatus.New;
-
-        public string? AssignedMemberId { get; set; } // Changed from int? to string?
-
-        [ForeignKey("AssignedMemberId")]
-        public ApplicationUser? Assignee { get; set; }
+        public string Description;
 
         [Required]
-        [CustomValidation(typeof(TaskValidator), nameof(TaskValidator.ValidateAssignmentState))]
-        public AssignmentStatus AssignmentStatus { get; set; } = AssignmentStatus.Pending;
+        public int ProjectAssignmentId { get; set; }
 
-        public DateTime? AssignmentUpdatedDate { get; set; }
+        public ProjectAssignment ProjectAssignment { get; set; }
 
-        [MaxLength(1000)]
-        public string? RejectionReason { get; set; }
+        public string? AssignedMemberId { get; set; }
 
-        [Required, Range(0, 3)]
-        public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
-
-        public double? EstimatedHours { get; set; }
-        public double? ActualHours { get; set; }
-
-        public int Depth { get; set; } = 0;
-        public bool IsLeaf { get; set; } = true;
-
-        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-
-        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public DateTime UpdatedDate { get; set; }
-
-        public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
-
-        [Timestamp]
-        public byte[]? Version { get; set; }
-
-        // Navigation
-        public Project? Project { get; set; }
-
-        public bool IsAssignedBySupervisor { get; set; } = false;
+        public int? ParentTaskId { get; set; }
+        [ForeignKey("ParentTaskId")]
         public ProjectTask? ParentTask { get; set; }
         public ICollection<ProjectTask> SubTasks { get; set; } = new List<ProjectTask>();
-        //public decimal Progress => SubTasks.Any()
-        //? SubTasks.Sum(t => t.Progress * t.Weight / 100)
-        //: (Status == TaskStatus.Completed ? 100 : 0);
-        [Column(TypeName = "decimal(5,2)")]
-        public decimal Progress { get; set; }
 
-    }
+        // Auto-calculated hierarchy properties
+        public int Depth { get; private set; }
+        public bool IsLeaf { get; private set; } = true;
 
-    public static class TaskValidator
-    {
-        public static ValidationResult? ValidateAssignmentState(AssignmentStatus status, ValidationContext context)
+        // Manual input fields
+        [Required, Range(1, 100)]
+        public int Weight { get; set; }
+
+        [Required]
+        public TaskPriority Priority { get; set; }
+
+        // Progress logic
+        private double _progress;
+        [Range(0, 100)]
+        public double Progress
         {
-            var task = (ProjectTask)context.ObjectInstance;
-
-            if (status == AssignmentStatus.Rejected && string.IsNullOrWhiteSpace(task.RejectionReason))
+            get => IsLeaf ? _progress : SubTasks.Average(st => st.Progress);
+            set
             {
-                return new ValidationResult("Rejection reason is required when a task is rejected.");
+                if (!IsLeaf)
+                    throw new InvalidOperationException("Progress can only be set on leaf tasks");
+
+                _progress = value;
             }
-
-            if ((status == AssignmentStatus.Accepted || status == AssignmentStatus.Rejected) && task.AssignedMemberId == null)
-            {
-                return new ValidationResult("Cannot accept or reject a task without an assignee.");
-            }
-
-            if (task.ParentTaskId.HasValue)
-            {
-                // Just compare ProjectAssignmentId values (both non-nullable ints)
-                if (task.ParentTask?.ProjectAssignmentId != task.ProjectAssignmentId)
-                {
-                    return new ValidationResult("Parent task must belong to the same project assignment.");
-                }
-            }
-
-
-            return ValidationResult.Success;
+            //set => _progress = value; // Only stored for leaf nodes
         }
 
+        [Required]
+        public TaskStatus Status { get; set; } = TaskStatus.Pending;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
+        public double EstimatedHours { get; set; }
+
+        public DateTime? DueDate { get; set; }
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Status == TaskStatus.Rejected && string.IsNullOrWhiteSpace(AssignedMemberId))
+                yield return new ValidationResult("Rejecting member must be specified", [nameof(AssignedMemberId)]);
+
+            if ((Priority == TaskPriority.High || Priority == TaskPriority.Critical) && !DueDate.HasValue)
+                yield return new ValidationResult("High/Critical tasks require due dates", [nameof(DueDate)]);
+
+            //if (ParentTask != null && Depth != ParentTask.Depth + 1)
+            //    yield return new ValidationResult("Depth miscalculation", [nameof(Depth)]);
+        }
+
+        public void UpdateHierarchy()
+        {
+            Depth = ParentTask?.Depth + 1 ?? 0;
+
+            // A task is a leaf only if it has no subtasks at this point in time.
+            IsLeaf = !SubTasks.Any();
+
+            // Propagate upward
+            //ParentTask?.UpdateHierarchy(); // Propagate changes upward
+
+            // Propagate downward (to update children's Depth)
+            if (SubTasks != null)
+            {
+                foreach (var subtask in SubTasks)
+                {
+                    // Ensure subtask's ParentTask reference is this instance for correct depth calculation
+                    if (subtask.ParentTask != this) subtask.ParentTask = this;
+                    subtask.UpdateHierarchy();
+                }
+            }
+        }
     }
-
-
 }
-
-    public class DueDateValidator
-    {
-    public static ValidationResult ValidateDueDate(DateTime dueDate, ValidationContext ctx)
-    {
-        var task = (ProjectTask)ctx.ObjectInstance;
-
-        if (task.Priority != PriorityLevel.Critical && dueDate < DateTime.UtcNow.Date.AddDays(7))
-            return new ValidationResult("Due date must be at least 7 days from now for non-critical tasks.");
-
-        return ValidationResult.Success!;
-    }
-
-
-}
-
