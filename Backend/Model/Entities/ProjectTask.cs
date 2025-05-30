@@ -39,16 +39,39 @@ namespace ProjectManagementSystem1.Model.Entities
         // Manual input fields
         [Required, Range(1, 100)]
         public int Weight { get; set; }
+        public double? ActualHours { get; set; }
 
-        [Required]
+        //[Required]
         public TaskPriority Priority { get; set; }
+
+        //public int? ProjectGoalId { get; set; }
+
+        //[ForeignKey("ProjectGoalId")]
+        //public ProjectGoal? ProjectGoal { get; set; }
 
         // Progress logic
         private double _progress;
         [Range(0, 100)]
         public double Progress
         {
-            get => IsLeaf ? _progress : SubTasks.Average(st => st.Progress);
+            get
+            {
+                if (SubTasks != null && SubTasks.Any())
+                {
+                    double totalWeight = SubTasks.Sum(st => st.Weight);
+                    if (totalWeight == 0)
+                    {
+                        return 0;
+                    }
+                    double weightedProgressSum = SubTasks.Sum(st => st.Progress * st.Weight);
+                    //return SubTasks.Average(st => st.Progress);
+                    return (totalWeight > 0) ? (weightedProgressSum / totalWeight) : 0;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
             set
             {
                 if (!IsLeaf)
@@ -56,6 +79,8 @@ namespace ProjectManagementSystem1.Model.Entities
 
                 _progress = value;
             }
+
+
             //set => _progress = value; // Only stored for leaf nodes
         }
 
@@ -68,6 +93,7 @@ namespace ProjectManagementSystem1.Model.Entities
         public double EstimatedHours { get; set; }
 
         public DateTime? DueDate { get; set; }
+        public string? RejectionReason { get; set; }
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Status == TaskStatus.Rejected && string.IsNullOrWhiteSpace(AssignedMemberId))
@@ -82,6 +108,7 @@ namespace ProjectManagementSystem1.Model.Entities
 
         public void UpdateHierarchy()
         {
+
             Depth = ParentTask?.Depth + 1 ?? 0;
 
             // A task is a leaf only if it has no subtasks at this point in time.
