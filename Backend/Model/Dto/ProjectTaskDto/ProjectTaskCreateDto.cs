@@ -17,7 +17,7 @@ namespace ProjectManagementSystem1.Model.Dto
 
         public string? AssignedMemberId { get; set; }
 
-        public int? ParentTaskId { get; set; } 
+        public int? ParentTaskId { get; set; }
 
         [Range(1, 100)]
         public int weight { get; set; }
@@ -25,6 +25,7 @@ namespace ProjectManagementSystem1.Model.Dto
         public double EstimatedHours { get; set; }
 
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
+        //public int? ProjectGoalId { get; set; }
 
         public DateTime? DueDate { get; set; }
 

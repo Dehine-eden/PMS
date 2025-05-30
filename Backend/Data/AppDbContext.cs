@@ -14,7 +14,9 @@ namespace ProjectManagementSystem1.Data
         public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
 
         public DbSet<ProjectTask> ProjectTasks { get; set; }
-
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        //public DbSet<ProjectGoal> ProjectGoals { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -40,7 +42,7 @@ namespace ProjectManagementSystem1.Data
             //// Limit hierarchy depth
             //entity.HasCheckConstraint("CK_MaxDepth", "Depth BETWEEN 0 AND 10");
 
-       
+
 
         }
 
