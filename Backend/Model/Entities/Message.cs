@@ -31,10 +31,10 @@ namespace ProjectManagementSystem1.Model.Entities
         [Required]
         public int MessageType { get; set; } // 1 = Project, 2 = Department, 3 = Personal
 
-        //public int? AttachmentId { get; set; }
+        public int? AttachmentId { get; set; }
 
-        //[ForeignKey("AttachmentId")]
-        //public Attachment? Attachment { get; set; }
+        [ForeignKey("AttachmentId")]
+        public Attachment? Attachment { get; set; }
 
         public DateTime TimeSent { get; set; } = DateTime.UtcNow;
         public DateTime? TimeEdited { get; set; }

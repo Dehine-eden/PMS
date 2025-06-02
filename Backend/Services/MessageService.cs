@@ -44,7 +44,7 @@ namespace ProjectManagementSystem1.Services
                 ReceiverId = dto.ReceiverId,
                 ProjectId = dto.ProjectId,
                 MessageType = dto.MessageType,
-                //AttachmentId = dto.AttachmentId,
+                AttachmentId = dto.AttachmentId,
                 TimeSent = DateTime.UtcNow,
                 IsDeleted = false
             };
