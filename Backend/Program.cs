@@ -53,7 +53,9 @@ builder.Services.AddScoped<IProjectAssignmentService, ProjectAssignmentService>(
 builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
 
 // Add services to the container.
 
