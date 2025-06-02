@@ -16,6 +16,8 @@ namespace ProjectManagementSystem1.Data
         public DbSet<ProjectTask> ProjectTasks { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Message> Messages { get; set; }
+
         //public DbSet<ProjectGoal> ProjectGoals { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -67,5 +67,11 @@ namespace ProjectManagementSystem1.Services
         {
             return await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
+
+        public async Task<ApplicationUser?> GetUserByEmployeeIdAsync(string employeeId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.EmployeeId == employeeId);
+        }
+
     }
 }
