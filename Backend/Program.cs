@@ -15,6 +15,7 @@ using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using System.Security.Claims;
 using System.Text;
+using ProjectManagementSystem1.Services.AttachmentService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,6 +54,8 @@ builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
 
 // Add services to the container.
 
