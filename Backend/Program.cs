@@ -20,6 +20,7 @@ using ProjectManagementSystem1.Services.TodoItems;
 using ProjectManagementSystem1.Services.TodoItemService;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -57,6 +58,9 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<ITodoItemService, TodoItemService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
 
 // Add services to the container.
 

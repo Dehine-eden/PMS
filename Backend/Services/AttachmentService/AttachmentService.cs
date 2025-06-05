@@ -5,6 +5,8 @@ using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.Attachments;
 using ProjectManagementSystem1.Model.Entities;
 using PermissionType = ProjectManagementSystem1.Model.Entities.PermissionType;
+using ProjectManagementSystem1.Data;
+using ProjectManagementSystem1.Model.Dto.Attachments;
 
 namespace ProjectManagementSystem1.Services.AttachmentService
 {
@@ -77,6 +79,8 @@ namespace ProjectManagementSystem1.Services.AttachmentService
                 .Include(a => a.UploadedBy)
                 .Include(a => a.ProjectTask)
                 .FirstOrDefaultAsync(a => a.Id == id);
+
+            return await _context.Attachments.FindAsync(id);
         }
 
         public async Task<IEnumerable<Attachment>> GetAttachmentByEntityAsync(string entityType, Guid entityId)
