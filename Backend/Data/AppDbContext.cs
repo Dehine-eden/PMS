@@ -12,14 +12,15 @@ namespace ProjectManagementSystem1.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
-
+        public DbSet<Message> Messages { get; set; }
         public DbSet<ProjectTask> ProjectTasks { get; set; }
+        public DbSet<TodoItem> TodoItems { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Message> Messages { get; set; }
-        public DbSet<Attachment> Attachments { get; set; }
-
         //public DbSet<ProjectGoal> ProjectGoals { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
+        public DbSet<AttachmentPermission> AttachmentPermissions { get; set; }
+        //public DbSet<AttachmentPermission> AttachmentPermissions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -39,6 +40,29 @@ namespace ProjectManagementSystem1.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<AttachmentPermission>(entity =>
+            {
+                entity.HasOne(ap => ap.Attachment)
+                .WithMany()
+                .HasForeignKey(ap => ap.AttachmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(ap => ap.User)
+                .WithMany()
+                .HasForeignKey(ap => ap.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(ap => ap.Role)
+                .WithMany()
+                .HasForeignKey(ap => ap.RoleId)
+                .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<Attachment>()
+                .HasOne(a => a.UploadedBy)
+                .WithMany()
+                .HasForeignKey(a => a.UploadedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
             // Prevent circular references via SQL trigger (optional)
             //entity.HasCheckConstraint("CK_NoSelfReference", "ParentTaskId <> Id");
 
