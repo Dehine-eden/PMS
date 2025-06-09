@@ -32,6 +32,7 @@ namespace ProjectManagementSystem1.Model.Dto
 
         public TaskPriority? Priority { get; set; }
         //public int? ProjectGoalId { get; set; }
+        public System.Threading.Tasks.TaskStatus? Status { get; set; }
 
         [Required]
         public TaskStatus? Status { get; set; }

@@ -26,7 +26,7 @@ namespace ProjectManagementSystem1.Model.Dto
 
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
         //public int? ProjectGoalId { get; set; }
-
+        public System.Threading.Tasks.TaskStatus Status { get; set; }
         public DateTime? DueDate { get; set; }
 
         // Optional advanced structure handling
