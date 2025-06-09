@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
 using ProjectManagementSystem1.Model.Dto;
 using ProjectManagementSystem1.Model.Dto.ProjectTaskDto;
+using ProjectManagementSystem1.Model.Dto.TodoItemsDto;
 using ProjectManagementSystem1.Model.Entities;
 using ProjectManagementSystem1.Services;
 using System.Security.Claims;
@@ -104,14 +105,33 @@ namespace ProjectManagementSystem1.Controllers
                 Progress = task.Progress,
                 Weight = task.Weight,
                 //Priority = task.Priority,
-                Status = task.Status,
+                //Status = task.Status,
                 EstimatedHours = task.EstimatedHours,
                 ActualHours = task.ActualHours,
                 DueDate = task.DueDate,
                 CreatedAt = task.CreatedAt,
-                SubTasks = task.SubTasks.Select(MapToResponseDto).ToList()
+                SubTasks = task.SubTasks.Select(MapToResponseDto).ToList(),
+                TodoItems = task.TodoItems.Select(MapTodoItemToReadDto).ToList()
             };
         }
+
+        private TodoItemReadDto MapTodoItemToReadDto(TodoItem todoItem)
+        {
+            if (todoItem == null) return null;
+            return new TodoItemReadDto
+            {
+                Id = todoItem.Id,
+                ProjectTaskId = todoItem.ProjectTaskId,
+                Title = todoItem.Title,
+                Description = todoItem.Description,
+                Weight = todoItem.Weight,
+                Progress = todoItem.Progress,
+                CreatedAt = todoItem.CreatedAt,
+                UpdatedAt = todoItem.UpdatedAt
+            };
+        }
+
+
 
         [HttpPut("{taskId}/assign/{memberId}")]
         public async Task<IActionResult> AssignTask(int taskId, string memberId)
@@ -174,59 +194,59 @@ namespace ProjectManagementSystem1.Controllers
             return Ok(MapToResponseDto(updatedTask));
         }
 
-        [HttpPut("{taskId}/accept")]
-        public async Task<IActionResult> AcceptTask(int taskId)
-        {
-            var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(memberId))
-            {
-                return Unauthorized();
-            }
+        //[HttpPut("{taskId}/accept")]
+        //public async Task<IActionResult> AcceptTask(int taskId)
+        //{
+        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //    if (string.IsNullOrEmpty(memberId))
+        //    {
+        //        return Unauthorized();
+        //    }
 
-            try
-            {
-                await _projectTaskService.AcceptTaskAsync(taskId, memberId);
-                return Ok();
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        await _projectTaskService.AcceptTaskAsync(taskId, memberId);
+        //        return Ok();
+        //    }
+        //    catch (NotFoundException)
+        //    {
+        //        return NotFound();
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
-        [HttpPut("{taskId}/reject")]
-        public async Task<IActionResult> RejectTask(int taskId, [FromBody] RejectTaskDto rejectDto)
-        {
-            var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //[HttpPut("{taskId}/reject")]
+        //public async Task<IActionResult> RejectTask(int taskId, [FromBody] RejectTaskDto rejectDto)
+        //{
+        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(memberId))
-            {
-                return Unauthorized();
-            }
+        //    if (string.IsNullOrEmpty(memberId))
+        //    {
+        //        return Unauthorized();
+        //    }
 
-            if (string.IsNullOrWhiteSpace(rejectDto?.Reason))
-            {
-                return BadRequest("Rejection reason is required.");
-            }
+        //    if (string.IsNullOrWhiteSpace(rejectDto?.Reason))
+        //    {
+        //        return BadRequest("Rejection reason is required.");
+        //    }
 
-            try
-            {
-                await _projectTaskService.RejectTaskAsync(taskId, memberId, rejectDto.Reason);
-                return Ok();
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        await _projectTaskService.RejectTaskAsync(taskId, memberId, rejectDto.Reason);
+        //        return Ok();
+        //    }
+        //    catch (NotFoundException)
+        //    {
+        //        return NotFound();
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpPost("{taskId}/comments")]
         public async Task<IActionResult> AddComment(int taskId, [FromBody] AddCommentDto commentDto)
@@ -251,6 +271,16 @@ namespace ProjectManagementSystem1.Controllers
             {
                 return NotFound();
             }
+        }
+        [HttpGet("{id}/progress")]
+        public async Task<IActionResult> GetProjectTaskProgress(int id)
+        {
+            var task = await _projectTaskService.GetTaskByIdAsync(id);
+            if (task == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { Progress = task.Progress });
         }
         [HttpPut("{taskId}/progress")]
         public async Task<IActionResult> UpdateTaskProgress(int taskId, [FromBody] UpdateTaskProgressDto progressDto)

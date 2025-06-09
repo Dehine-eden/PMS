@@ -3,6 +3,10 @@ using OpenQA.Selenium;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto;
 using ProjectManagementSystem1.Model.Entities;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TaskStatus = ProjectManagementSystem1.Model.Entities.TaskStatus; // Keep this specific using alias
 
 namespace ProjectManagementSystem1.Services
 {
@@ -22,7 +26,6 @@ namespace ProjectManagementSystem1.Services
                 .Include(t => t.ProjectAssignment)
                 .Include(t => t.ParentTask)
                 .Include(t => t.SubTasks)
-                .Include(t => t.TodoItems)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             if (task != null)
@@ -43,6 +46,7 @@ namespace ProjectManagementSystem1.Services
                     {
                         await _context.Entry(subtask).Collection(t => t.SubTasks).LoadAsync();
                     }
+
                     await LoadSubtasksRecursively(subtask);
                 }
             }
@@ -71,6 +75,7 @@ namespace ProjectManagementSystem1.Services
             string assignedMemberId = taskToDelete.AssignedMemberId;
             string taskTitle = taskToDelete.Title;
 
+
             if (taskToDelete.SubTasks.Any())
             {
                 foreach (var subtask in taskToDelete.SubTasks.ToList())
@@ -98,8 +103,9 @@ namespace ProjectManagementSystem1.Services
         {
             if (!parentTaskId.HasValue) return;
 
+            // Get current task's project ID from its assignment
             var currentTaskProjectAssignment = await _context.ProjectAssignments
-                .AsNoTracking()
+                .AsNoTracking() // No need to track for validation
                 .FirstOrDefaultAsync(pa => pa.Id == projectAssignmentIdOfCurrentTask);
 
             if (currentTaskProjectAssignment == null)
@@ -109,7 +115,7 @@ namespace ProjectManagementSystem1.Services
             var currentTaskProjectId = currentTaskProjectAssignment.ProjectId;
 
             var parentTask = await _context.ProjectTasks
-                .AsNoTracking()
+                .AsNoTracking() // No need to track for validation
                 .Include(t => t.ProjectAssignment)
                 .FirstOrDefaultAsync(t => t.Id == parentTaskId.Value);
 
@@ -193,16 +199,18 @@ namespace ProjectManagementSystem1.Services
             var task = new ProjectTask
             {
                 Title = dto.Title,
-                Description = dto.Description,
+                Description = dto.Description, // Added description mapping
                 ProjectAssignmentId = dto.ProjectAssignmentId,
                 ParentTaskId = dto.ParentTaskId,
-                Weight = dto.weight,
+                Weight = dto.weight, // Assuming ProjectTaskCreateDto.weight maps to ProjectTask.Weight
                 Priority = dto.Priority,
+                //ProjectGoal = dto.ProjectGoalId,
                 DueDate = dto.DueDate,
-                StartDate = dto.StartDate,
                 EstimatedHours = dto.EstimatedHours,
-                AssignedMemberId = dto.AssignedMemberId,
-                IsProjectRoot = !dto.ParentTaskId.HasValue
+                AssignedMemberId = dto.AssignedMemberId
+                // EF Core by convention will set ProjectAssignment if ProjectAssignmentId is set,
+                // and ParentTask if ParentTaskId is set, assuming the related entities are tracked or loaded.
+                // Initial Depth (0) and IsLeaf (true) are fine for new tasks. UpdateHierarchy will adjust later if it becomes a parent/subtask.
             };
 
 
@@ -235,6 +243,11 @@ namespace ProjectManagementSystem1.Services
             // Validate circular reference after task has an ID and ParentTaskId is set
             await ValidateCircularReferenceAsync(task.Id, task.ParentTaskId);
 
+            // If it's a subtask, its hierarchy (Depth, parent's IsLeaf) will be updated by AddSubtaskAsync.
+            // If it's a root task, its initial Depth (0) and IsLeaf (true) are correct.
+            // If a root task needs its ParentTask explicitly set to null (it is by default for int?), it's fine.
+            // No need to call UpdateHierarchy here as its state is initially correct or will be handled by AddSubtaskAsync.
+
             return task;
         }
         public async Task<ProjectTask> AddSubtaskAsync(int parentTaskId, ProjectTaskCreateDto subtaskSpecificDto, string creatorId)
@@ -264,9 +277,11 @@ namespace ProjectManagementSystem1.Services
                 ParentTaskId = parentTaskId, // Explicitly set the ParentTaskId for the new subtask
                 weight = subtaskSpecificDto.weight,
                 EstimatedHours = subtaskSpecificDto.EstimatedHours,
+                //Priority = subtaskSpecificDto.Priority,
                 DueDate = subtaskSpecificDto.DueDate
             };
 
+            // CreateTaskAsync will validate, create, add to context, and save the new subtask.
             var subtaskEntity = await CreateTaskAsync(dtoForCreateCall, creatorId);
 
             // Notify the creator
@@ -312,10 +327,7 @@ namespace ProjectManagementSystem1.Services
 
         public async Task AssignTaskAsync(int taskId, string memberId)
         {
-            var task = await _context.ProjectTasks
-                .Include(t => t.SubTasks) // Include subtasks
-                .FirstOrDefaultAsync(t => t.Id == taskId);
-
+            var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task == null)
             {
                 throw new NotFoundException($"Task with ID '{taskId}' not found.");
@@ -441,15 +453,23 @@ namespace ProjectManagementSystem1.Services
 
             string originalAssignedMemberId = task.AssignedMemberId;
             DateTime? originalDueDate = task.DueDate;
-            //TaskStatus originalStatus = task.Status; // TaskStatus removed
+            TaskStatus originalStatus = task.Status;
 
             // Update properties if provided in the DTO
-            if (dto.Title != null) task.Title = dto.Title;
-            if (dto.Description != null) task.Description = dto.Description;
+            if (dto.Title != null)
+            {
+                task.Title = dto.Title;
+            }
+            if (dto.Description != null)
+            {
+                task.Description = dto.Description;
+            }
             if (dto.Weight.HasValue)
             {
-                if (dto.Weight.Value < 1 || dto.Weight.Value > 100)
+                if (dto.Weight.HasValue && (dto.Weight.Value < 1 || dto.Weight.Value > 100))
+                {
                     throw new InvalidOperationException("Weight must be between 1 and 100.");
+                }
                 task.Weight = dto.Weight.Value;
                 await UpdateParentTaskWeightAsync(id);
             }
@@ -518,12 +538,109 @@ namespace ProjectManagementSystem1.Services
             return task;
         }
 
+        public async Task AcceptTaskAsync(int taskId, string memberId)
+        {
+            var task = await _context.ProjectTasks.FindAsync(taskId);
+            if (task == null)
+            {
+                throw new NotFoundException($"Task with ID '{taskId}' not found.");
+            }
+
+            await ValidateMemberAssignmentAsync(memberId, task.ProjectAssignmentId);
+
+            if (task.AssignedMemberId != memberId)
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not assigned to member ID '{memberId}'.");
+            }
+
+            if (!task.IsLeaf)
+            {
+                throw new InvalidOperationException($"Task with Id '{taskId}' is not a leaf task and cannot be accepted directly.");
+            }
+            if (task.Status == TaskStatus.Pending || task.Status == TaskStatus.Rejected)
+            {
+                task.Status = TaskStatus.Accepted;
+                task.RejectionReason = null;
+                await _context.SaveChangesAsync();
+
+                await _notification.CreateNotificationAsync(
+                   userId: memberId,
+                   message: $"You have accepted task: '{task.Title}'.",
+                   relatedEntityType: "ProjectTask",
+                   relatedEntityId: taskId
+               );
+            }
+            else
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not in a Pending state and cannot be accepted.");
+            }
+
+
+        }
+
+        public async Task RejectTaskAsync(int taskId, string memberId, string reason)
+        {
+            var task = await _context.ProjectTasks.FindAsync(taskId);
+            if (task == null)
+            {
+                throw new NotFoundException($"Task with ID '{taskId}' not found.");
+            }
+
+            await ValidateMemberAssignmentAsync(memberId, task.ProjectAssignmentId);
+
+            if (task.AssignedMemberId != memberId)
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not assigned to member ID '{memberId}'.");
+            }
+
+            if (!task.IsLeaf)
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not a leaf task and cannot be rejected directly.");
+            }
+            if (task.Status == TaskStatus.Pending || task.Status == TaskStatus.Accepted)
+            {
+                task.Status = TaskStatus.Rejected;
+                task.RejectionReason = reason;
+                await _context.SaveChangesAsync();
+
+                await _notification.CreateNotificationAsync(
+                    userId: memberId,
+                    message: $"You have rejected task: '{task.Title}' with reason.",
+                    relatedEntityType: "ProjectTask",
+                    relatedEntityId: taskId
+                );
+            }
+            else
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not in a Pending state and cannot be rejected.");
+            }
+        }
+
+        public async Task UpdateTaskActualHoursAsync(int taskId, string memberId, double actualHours)
+        {
+            var task = await _context.ProjectTasks.FindAsync(taskId);
+            if (task == null)
+                throw new NotFoundException($"Task with ID '{taskId} not found.");
+
+            await ValidateMemberAssignmentAsync(memberId, task.ProjectAssignmentId);
+
+            if (task.AssignedMemberId != memberId)
+            {
+                throw new InvalidOperationException($"Task with ID '{taskId}' is not assigned to member ID '{memberId}.");
+            }
+
+            task.ActualHours = actualHours;
+            task.UpdatedAt = DateTime.UtcNow;
+            _context.ProjectTasks.Update(task);
+            await _context.SaveChangesAsync();
+        }
         public async Task UpdateTaskProgressAsync(int taskId, string memberId, double progress)
         {
+
             var task = await _context.ProjectTasks
                 .Include(t => t.SubTasks)
-                .Include(t => t.TodoItems) // Ensure TodoItems are loaded for IsLeaf check
                 .FirstOrDefaultAsync(t => t.Id == taskId);
+
 
             if (task == null)
             {
@@ -537,13 +654,28 @@ namespace ProjectManagementSystem1.Services
                 throw new InvalidOperationException($"Task with ID '{taskId}' is not assigned to member ID '{memberId}'.");
             }
 
-            var hasAcceptedTodo = await _context.TodoItems.AnyAsync(ti => ti.ProjectTaskId == taskId && ti.Status == TodoItemStatus.Accepted);
-            if (!hasAcceptedTodo)
+            if (task.Status != TaskStatus.Accepted)
             {
-                throw new InvalidOperationException($"Progress can only be updated for task '{task.Title}' if it has at least one accepted TodoItem.");
+                throw new InvalidOperationException($"Progress can only be updated for task '{task.Title}' if it has been accepted.");
             }
 
-            task.Progress = progress; // This will now use the private setter with IsLeaf check
+            if (!task.IsLeaf)
+            {
+                await _context.Entry(task).ReloadAsync();
+                if (!task.IsLeaf)
+                {
+                    throw new InvalidOperationException("Progress can only be updated for leaf tasks.");
+                }
+            }
+
+            task.Progress = progress;
+
+            if (task.Weight > 0)
+            {
+                task.Weight = (int)(task.Weight * (1 - (progress / 100)));
+                task.Weight = Math.Max(0, Math.Min(100, task.Weight));
+            }
+
             task.UpdatedAt = DateTime.UtcNow;
             _context.ProjectTasks.Update(task);
             await _context.SaveChangesAsync();
@@ -555,15 +687,15 @@ namespace ProjectManagementSystem1.Services
             }
         }
 
-        public async Task UpdateParentTaskProgressAsync(int? parentTaskId)
+        private async Task UpdateParentTaskProgressAsync(int? parentTaskId)
         {
+
             Console.WriteLine($"UpdateParentTaskProgressAsync called with parentTaskId: {parentTaskId}");
 
             if (parentTaskId.HasValue)
             {
                 var parentTask = await _context.ProjectTasks
                     .Include(p => p.SubTasks)
-                    .Include(p => p.TodoItems)
                     .FirstOrDefaultAsync(p => p.Id == parentTaskId);
 
                 if (parentTask == null)
@@ -572,50 +704,34 @@ namespace ProjectManagementSystem1.Services
                     return; // Exit the method if the parent task doesn't exist
                 }
 
+
                 _context.Entry(parentTask).Reload();
 
                 if (parentTask != null)
                 {
-                    double totalWeight = 0;
-                    double weightedProgressSum = 0;
-
-                    // Calculate progress based on sub-ProjectTasks
                     if (parentTask.SubTasks.Any())
                     {
-                        foreach (var subtask in parentTask.SubTasks)
+                        double totalWeight = parentTask.SubTasks.Sum(st => st.Weight);
+                        if (totalWeight > 0)
                         {
-                            totalWeight += subtask.Weight;
-                            weightedProgressSum += subtask.Progress * subtask.Weight;
+                            double weightedProgressSum = parentTask.SubTasks.Sum(st => st.Progress * st.Weight);
+                            parentTask.Progress = weightedProgressSum / totalWeight;
+                            Console.WriteLine($"Calculated progress for parent task ID {parentTaskId}: {parentTask.Progress}");
                         }
-                    }
-
-                    // Calculate progress based on TodoItems
-                    if (parentTask.TodoItems.Any())
-                    {
-                        foreach (var todoItem in parentTask.TodoItems)
+                        else
                         {
-                            totalWeight += todoItem.Weight;
-                            weightedProgressSum += todoItem.Progress * todoItem.Weight;
+                            parentTask.Progress = 0;
                         }
+
+                        //parentTask.Progress = parentTask.SubTasks.Average(st => st.Progress);
+                        parentTask.UpdatedAt = DateTime.UtcNow;
+                        _context.Entry(parentTask).State = EntityState.Modified;
+
+                        await _context.SaveChangesAsync();
+
+                        Console.WriteLine($"Calling UpdateParentTaskProgressAsync recursively with parentTaskId: {parentTask.ParentTaskId}");
+                        await UpdateParentTaskProgressAsync(parentTask.ParentTaskId); // Recursive update
                     }
-
-                    if (totalWeight > 0)
-                    {
-                        parentTask.SetCalculatedProgress(weightedProgressSum / totalWeight);
-                        Console.WriteLine($"Calculated progress for parent task ID {parentTaskId}: {parentTask.Progress}");
-                    }
-                    else
-                    {
-                        parentTask.SetCalculatedProgress(0);
-                    }
-
-                    parentTask.UpdatedAt = DateTime.UtcNow;
-                    _context.Entry(parentTask).State = EntityState.Modified;
-
-                    await _context.SaveChangesAsync();
-
-                    Console.WriteLine($"Calling UpdateParentTaskProgressAsync recursively with parentTaskId: {parentTask.ParentTaskId}");
-                    await UpdateParentTaskProgressAsync(parentTask.ParentTaskId); // Recursive update
                 }
             }
         }
@@ -637,8 +753,13 @@ namespace ProjectManagementSystem1.Services
                     parentTask.EstimatedHours = totalEstimatedHours;
                     _context.ProjectTasks.Update(parentTask);
                     await _context.SaveChangesAsync();
+
+                    // Optionally, you could propagate this update further up the hierarchy
+                    // if your requirements dictate immediate consistency across all levels.
+                    // However, for better performance, you might defer such full updates.
                 }
             }
+
         }
 
         private async Task UpdateParentTaskWeightAsync(int? parentTaskId)
@@ -650,49 +771,42 @@ namespace ProjectManagementSystem1.Services
                 return;
             }
 
-            var parentTask = await _context.ProjectTasks
-                .Include(p => p.SubTasks)
-                .Include(p => p.TodoItems)
-                .FirstOrDefaultAsync(p => p.Id == parentTaskId);
+            var task = await _context.ProjectTasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == parentTaskId);
 
-            if (parentTask != null)
+
+            if (task?.ParentTaskId.HasValue == true)
             {
-                Console.WriteLine($"Found parent task with ID {parentTask.Id}, Title: {parentTask.Title}");
+                var parentTask = await _context.ProjectTasks
+                    .Include(p => p.SubTasks)
+                    .FirstOrDefaultAsync(p => p.Id == task.ParentTaskId);
 
-                double totalWeight = 0;
-
-                // Sum weights of sub-ProjectTasks
-                if (parentTask.SubTasks.Any())
+                if (parentTask != null)
                 {
-                    totalWeight += parentTask.SubTasks.Sum(sub => sub.Weight);
-                    Console.WriteLine($"Total weight of sub-ProjectTasks for parent {parentTask.Id}: {parentTask.SubTasks.Sum(sub => sub.Weight)}");
-                }
+                    Console.WriteLine($"Found parent task with ID {parentTask.Id}, Title: {parentTask.Title}");
+                    double totalWeight = parentTask.SubTasks.Sum(sub => sub.Weight);
+                    Console.WriteLine($"Total weight of subtasks for parent {parentTask.Id}: {totalWeight}");
+                    parentTask.Weight = Math.Min(100, (int)totalWeight); // Assuming weight is an integer
+                    _context.Entry(parentTask).State = EntityState.Modified;
+                    //_context.ProjectTasks.Update(parentTask);
+                    await _context.SaveChangesAsync();
 
-                // Sum weights of TodoItems
-                if (parentTask.TodoItems.Any())
+                    // Continue propagating the update up the hierarchy
+                    Console.WriteLine($"Calling UpdateParentTaskWeightAsync recursively with parentTaskId: {parentTask.ParentTaskId}");
+                    await UpdateParentTaskWeightAsync(parentTask.ParentTaskId);
+                }
+                else
                 {
-                    totalWeight += parentTask.TodoItems.Sum(todo => todo.Weight);
-                    Console.WriteLine($"Total weight of TodoItems for parent {parentTask.Id}: {parentTask.TodoItems.Sum(todo => todo.Weight)}");
+                    Console.WriteLine($"Parent task with ID {task.ParentTaskId} not found.");
                 }
-
-                Console.WriteLine($"Total combined weight for parent {parentTask.Id}: {totalWeight}");
-                parentTask.Weight = Math.Min(100, (int)totalWeight); // Assuming weight is an integer
-                _context.Entry(parentTask).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                // Continue propagating the update up the hierarchy
-                Console.WriteLine($"Calling UpdateParentTaskWeightAsync recursively with parentTaskId: {parentTask.ParentTaskId}");
-                await UpdateParentTaskWeightAsync(parentTask.ParentTaskId);
             }
             else
             {
-                Console.WriteLine($"Parent task with ID {parentTaskId} not found.");
+                Console.WriteLine($"Task with ID {task?.Id} has no ParentTaskId, stopping.");
             }
-        }
 
-        public Task UpdateTaskActualHoursAsync(int taskId, string memberId, double actualHours)
-        {
-            throw new NotImplementedException();
         }
     }
 }
+

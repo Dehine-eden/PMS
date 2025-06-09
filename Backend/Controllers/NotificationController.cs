@@ -88,7 +88,7 @@ namespace ProjectManagementSystem1.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (notification.RecipientUserId != userId)
-            {
+    {
                 return Forbid(); // Or Unauthorized
             }
 
