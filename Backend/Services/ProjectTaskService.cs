@@ -82,15 +82,14 @@ namespace ProjectManagementSystem1.Services
             _context.ProjectTasks.Remove(taskToDelete);
             await _context.SaveChangesAsync();
 
-            if (!string.IsNullOrEmpty(assignedMemberId))
-            {
-                await _notification.CreateNotificationAsync(
-                    userId: assignedMemberId,
+            await _notification.CreateNotificationAsync(
+                    recipientUserId: assignedMemberId,
+                    subject: "Task Deleted",
                     message: $"Task '{taskTitle}' has been deleted.",
                     relatedEntityType: "ProjectTask",
-                    relatedEntityId: taskId
+                    relatedEntityId: taskId,
+                    deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
                 );
-            }
 
             return true;
         }
@@ -212,21 +211,24 @@ namespace ProjectManagementSystem1.Services
 
             // Notify the creator
             await _notification.CreateNotificationAsync(
-                userId: creatorId,
+                recipientUserId: creatorId,
+                subject: "New Task Created",
                 message: $"You have created task: '{task.Title}'.",
                 relatedEntityType: "ProjectTask",
-                relatedEntityId: task.Id
+                relatedEntityId: task.Id,
+                deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
             );
-
             // Notify the assigned member, if any
             if (!string.IsNullOrEmpty(task.AssignedMemberId) && task.AssignedMemberId != creatorId)
             {
                 await _notification.CreateNotificationAsync(
-                    userId: task.AssignedMemberId,
-                    message: $"You have been assigned to task: '{task.Title}'.",
-                    relatedEntityType: "ProjectTask",
-                    relatedEntityId: task.Id
-                );
+                     recipientUserId: task.AssignedMemberId,
+                     subject: "Assigned to Task",
+                     message: $"You have been assigned to task: '{task.Title}'.",
+                     relatedEntityType: "ProjectTask",
+                     relatedEntityId: task.Id,
+                     deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+                 );
             }
             await UpdateParentTaskEstimatedHoursAsync(task.Id);
 
@@ -269,21 +271,25 @@ namespace ProjectManagementSystem1.Services
 
             // Notify the creator
             await _notification.CreateNotificationAsync(
-                userId: creatorId,
+                recipientUserId: creatorId,
+                subject: "New Subtask Created",
                 message: $"You have created subtask: '{subtaskEntity.Title}' under task '{parentTaskEntity.Title}'.",
                 relatedEntityType: "ProjectTask",
-                relatedEntityId: subtaskEntity.Id
+                relatedEntityId: subtaskEntity.Id,
+                deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
             );
 
             // Notify the assigned member, if any
             if (!string.IsNullOrEmpty(subtaskEntity.AssignedMemberId) && subtaskEntity.AssignedMemberId != creatorId)
             {
                 await _notification.CreateNotificationAsync(
-                    userId: subtaskEntity.AssignedMemberId,
-                    message: $"You have been assigned to subtask: '{subtaskEntity.Title}' under task '{parentTaskEntity.Title}'.",
-                    relatedEntityType: "ProjectTask",
-                    relatedEntityId: subtaskEntity.Id
-                );
+                   recipientUserId: subtaskEntity.AssignedMemberId,
+                   subject: "Assigned to Subtask",
+                   message: $"You have been assigned to subtask: '{subtaskEntity.Title}' under task '{parentTaskEntity.Title}'.",
+                   relatedEntityType: "ProjectTask",
+                   relatedEntityId: subtaskEntity.Id,
+                   deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+               );
             }
 
             if (!parentTaskEntity.SubTasks.Contains(subtaskEntity))
@@ -318,15 +324,36 @@ namespace ProjectManagementSystem1.Services
             // Optionally validate if the member is assigned to the project
             await ValidateMemberAssignmentAsync(memberId, task.ProjectAssignmentId);
 
+            string originalAssignee = task.AssignedMemberId;
             task.AssignedMemberId = memberId;
             await _context.SaveChangesAsync();
 
-            await _notification.CreateNotificationAsync(
-                userId: memberId,
-                message: $"You have been assigned to task: '{task.Title}'.",
-                relatedEntityType: "ProjectTask",
-                relatedEntityId: taskId
-            );
+            if (originalAssignee != memberId)
+            {
+                if (!string.IsNullOrEmpty(memberId))
+                {
+                    await _notification.CreateNotificationAsync(
+                        recipientUserId: memberId,
+                        subject: "Assigned to Task",
+                        message: $"You have been assigned to task: '{task.Title}'.",
+                        relatedEntityType: "ProjectTask",
+                        relatedEntityId: taskId,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+                    );
+                }
+                if (!string.IsNullOrEmpty(originalAssignee))
+                {
+                    await _notification.CreateNotificationAsync(
+                        recipientUserId: originalAssignee,
+                        subject: "Unassigned from Task",
+                        message: $"You have been unassigned from task: '{task.Title}'.",
+                        relatedEntityType: "ProjectTask",
+                        relatedEntityId: taskId,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+                    );
+                }
+            }
+
 
             // Enhancement: Automatically create a TodoItem for the assigned task with the same weight as the task
             var mainTodoItem = new TodoItem
@@ -339,10 +366,12 @@ namespace ProjectManagementSystem1.Services
             _context.TodoItems.Add(mainTodoItem);
             await _context.SaveChangesAsync();
             await _notification.CreateNotificationAsync(
-                userId: memberId,
+                recipientUserId: memberId,
+                subject: "New Action Item Created",
                 message: $"A new action item has been created for you in task: '{task.Title}'.",
                 relatedEntityType: "TodoItem",
-                relatedEntityId: mainTodoItem.Id
+                relatedEntityId: mainTodoItem.Id,
+                deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
             );
 
             // Enhancement: Automatically create TodoItems and assign member to subtasks as well with the same weight as the subtask
@@ -350,6 +379,7 @@ namespace ProjectManagementSystem1.Services
             {
                 foreach (var subtask in task.SubTasks)
                 {
+                    string originalSubtaskAssignee = subtask.AssignedMemberId;
                     // Assign the member to the subtask
                     subtask.AssignedMemberId = memberId;
                     _context.ProjectTasks.Update(subtask); // Mark subtask for update
@@ -363,11 +393,38 @@ namespace ProjectManagementSystem1.Services
                     };
                     _context.TodoItems.Add(subtaskTodoItem);
                     await _context.SaveChangesAsync(); // Save changes for both subtask assignment and todo item creation
+                    if (originalSubtaskAssignee != memberId)
+                    {
+                        if (!string.IsNullOrEmpty(memberId))
+                        {
+                            await _notification.CreateNotificationAsync(
+                                recipientUserId: memberId,
+                                subject: "Assigned to Subtask",
+                                message: $"You have been assigned to subtask: '{subtask.Title}' under task '{task.Title}'.",
+                                relatedEntityType: "ProjectTask",
+                                relatedEntityId: subtask.Id,
+                                deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+                            );
+                        }
+                        if (!string.IsNullOrEmpty(originalSubtaskAssignee))
+                        {
+                            await _notification.CreateNotificationAsync(
+                                recipientUserId: originalSubtaskAssignee,
+                                subject: "Unassigned from Subtask",
+                                message: $"You have been unassigned from subtask: '{subtask.Title}' under task '{task.Title}'.",
+                                relatedEntityType: "ProjectTask",
+                                relatedEntityId: subtask.Id,
+                                deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
+                            );
+                        }
+                    }
                     await _notification.CreateNotificationAsync(
-                        userId: memberId,
+                        recipientUserId: memberId,
+                        subject: "New Action Item Created",
                         message: $"A new action item has been created for you in subtask: '{subtask.Title}' under task '{task.Title}'.",
                         relatedEntityType: "TodoItem",
-                        relatedEntityId: subtaskTodoItem.Id
+                        relatedEntityId: subtaskTodoItem.Id,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
                     );
                 }
                 await _context.SaveChangesAsync(); // Save all subtask assignments
@@ -397,76 +454,66 @@ namespace ProjectManagementSystem1.Services
                 await UpdateParentTaskWeightAsync(id);
             }
 
-            if (dto.DueDate.HasValue) task.DueDate = dto.DueDate;
-            if (dto.StartDate.HasValue) task.StartDate = dto.StartDate; // Ensure this line is present
-            if (dto.EstimatedHours.HasValue)
-            {
-                task.EstimatedHours = dto.EstimatedHours.Value;
-                await UpdateParentTaskEstimatedHoursAsync(id); // Update parent on estimated hours change
-            }
-            if (dto.AssignedMemberId != null) task.AssignedMemberId = dto.AssignedMemberId;
-            //if (dto.Status.HasValue) task.Status = dto.Status.Value; // Status removed
-            if (dto.Priority.HasValue) task.Priority = dto.Priority.Value;
-
-            task.UpdatedAt = DateTime.UtcNow;
-            _context.ProjectTasks.Update(task);
-            await _context.SaveChangesAsync();
-
-            // Send notifications based on changes
-            /*if (dto.Status.HasValue && dto.Status.Value != originalStatus) // Status removed
-            {
-                // Notify assigned member and potentially supervisor
-                if (!string.IsNullOrEmpty(task.AssignedMemberId))
-                {
-                    await _notification.CreateNotificationAsync(
-                        userId: task.AssignedMemberId,
-                        message: $"The status of task '{task.Title}' has been updated to '{dto.Status.Value}'.",
-                        relatedEntityType: "ProjectTask",
-                        relatedEntityId: id
-                    );
-                }
-                // Optionally notify supervisor
-            }*/
-
             if (dto.DueDate.HasValue && dto.DueDate.Value != originalDueDate)
             {
                 // Notify assigned member and potentially supervisor
                 if (!string.IsNullOrEmpty(task.AssignedMemberId))
                 {
                     await _notification.CreateNotificationAsync(
-                        userId: task.AssignedMemberId,
+                        recipientUserId: task.AssignedMemberId,
+                        subject: "Task Due Date Updated",
                         message: $"The due date of task '{task.Title}' has been updated to '{dto.DueDate?.ToString("yyyy-MM-dd")}'.",
                         relatedEntityType: "ProjectTask",
-                        relatedEntityId: id
+                        relatedEntityId: id,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
                     );
                 }
                 // Optionally notify supervisor
             }
-
+            if (dto.StartDate.HasValue) task.StartDate = dto.StartDate; // Ensure this line is present
+            if (dto.EstimatedHours.HasValue)
+            {
+                task.EstimatedHours = dto.EstimatedHours.Value;
+                await UpdateParentTaskEstimatedHoursAsync(id); // Update parent on estimated hours change
+            }
+            if (dto.ActualHours.HasValue)
+            {
+                task.ActualHours = dto.ActualHours.Value;
+            }
             if (dto.AssignedMemberId != null && dto.AssignedMemberId != originalAssignedMemberId)
             {
                 // Notify the newly assigned member
-                if (!string.IsNullOrEmpty(task.AssignedMemberId))
+                if (!string.IsNullOrEmpty(dto.AssignedMemberId))
                 {
                     await _notification.CreateNotificationAsync(
-                        userId: task.AssignedMemberId,
+                        recipientUserId: dto.AssignedMemberId,
+                        subject: "Assigned to Task",
                         message: $"You have been assigned to task: '{task.Title}'.",
                         relatedEntityType: "ProjectTask",
-                        relatedEntityId: id
+                        relatedEntityId: id,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
                     );
                 }
                 // Optionally notify the previously assigned member
                 if (!string.IsNullOrEmpty(originalAssignedMemberId))
                 {
                     await _notification.CreateNotificationAsync(
-                        userId: originalAssignedMemberId,
+                        recipientUserId: originalAssignedMemberId,
+                        subject: "Unassigned from Task",
                         message: $"You have been unassigned from task: '{task.Title}'.",
                         relatedEntityType: "ProjectTask",
-                        relatedEntityId: id
+                        relatedEntityId: id,
+                        deliveryMethod: NotificationDeliveryMethod.InApp // You can choose the delivery method
                     );
                 }
                 // Optionally notify supervisor
             }
+            //if (dto.Status.HasValue) task.Status = dto.Status.Value; // Status removed
+            if (dto.Priority.HasValue) task.Priority = dto.Priority.Value;
+
+            task.UpdatedAt = DateTime.UtcNow;
+            _context.ProjectTasks.Update(task);
+            await _context.SaveChangesAsync();
 
             return task;
         }

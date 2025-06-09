@@ -23,12 +23,15 @@ namespace ProjectManagementSystem1.Model.Dto
         public TaskPriority Priority { get; set; }
         public double EstimatedHours { get; set; }
         public double? ActualHours { get; set; }
+        public DateTime? StartDate { get; set; }
         public DateTime? DueDate { get; set; }
         public Entities.TaskStatus Status { get; set; }
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsProjectRoot { get; set; }
         // Subtasks (hierarchy)
+        public List<int> Dependencies { get; set; } = new List<int>();
         public ICollection<ProjectTaskReadDto> SubTasks { get; set; } = new List<ProjectTaskReadDto>();
         public ICollection<TodoItemReadDto> TodoItems { get; set; } = new List<TodoItemReadDto>();
     }

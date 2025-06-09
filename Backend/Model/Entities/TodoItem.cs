@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.VisualBasic;
+using ProjectManagementSystem1.Model.Interfaces;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectManagementSystem1.Model.Entities
 {
-    public enum TodoItemStatus { Pending, Accepted, Rejected }
+    public enum TodoItemStatus { Pending, Accepted, Rejected, InProgress, WaitingForReview, Completed }
 
-    public class TodoItem
+    public class TodoItem : IRemindable
     {
         [Key]
         public int Id { get; set; }
@@ -32,5 +34,13 @@ namespace ProjectManagementSystem1.Model.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public TodoItemStatus Status { get; set; } = TodoItemStatus.Pending;
+
+        string IRemindable.RecipientUserId => ProjectTask?.AssignedMemberId;
+        string IRemindable.ReminderSubjectTemplate => "Reminder: Todo Item '{Title}' Due Soon";
+        string IRemindable.ReminderMessageTemplate => "This is a reminder that the todo item '{Title}' is due on '{DueDate:yyyy-MM-dd}'. Please ensure it is completed on time.";
+        string IRemindable.EntityType => "TodoItem";
+        int IRemindable.Id => Id; // Explicit implementation for clarity
+        DateTime? IRemindable.DueDate { get; set; } // Explicit implementation for clarity
+        string IRemindable.Title => Title; // Explicit implementation for clarity
     }
 }

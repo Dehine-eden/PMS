@@ -20,25 +20,15 @@ namespace ProjectManagementSystem1.Controllers
         private readonly IProjectTaskService _projectTaskService;
         private readonly ICommentService _commentService;
         private readonly INotificationService _notification;
-        public ProjectTaskController(IProjectTaskService projectTaskService, ICommentService commentService)
+        private readonly ILogger<ProjectTaskController> _logger;
+        public ProjectTaskController(IProjectTaskService projectTaskService, ICommentService commentService, INotificationService notificationService, ILogger<ProjectTaskController> logger)
         {
             _projectTaskService = projectTaskService;
             _commentService = commentService;
+            _notification = notificationService;
+            _logger = logger;
         }
 
-        /// GET: api/ProjectTask/notifications
-        [HttpGet("notifications")]
-        public async Task<IActionResult> GetUserNotifications()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
-            var notifications = await _notification.GetNotificationsForUserAsync(userId);
-            return Ok(notifications);
-        }
         [Authorize(Policy = "SupervisorOnly")]
         [HttpPost("create-task")]
         public async Task<IActionResult> CreateTask([FromBody] ProjectTaskCreateDto dto)
@@ -51,6 +41,22 @@ namespace ProjectManagementSystem1.Controllers
             try
             {
                 var task = await _projectTaskService.CreateTaskAsync(dto, memberId);
+                try
+                {
+                    await _notification.CreateNotificationAsync(
+                        recipientUserId: User.FindFirstValue(ClaimTypes.NameIdentifier), // Send to the user creating the task
+                        subject: "Test Email Notification",
+                        message: $"This is a test email notification from your Project Management System to verify email sending functionality.",
+                        relatedEntityType: "ProjectTask",
+                        relatedEntityId: task.Id,
+                        deliveryMethod: NotificationDeliveryMethod.Email
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't break the task creation
+                    _logger.LogError($"Error sending test email: {ex.Message}");
+                }
                 return Ok(MapToResponseDto(task));
             }
             catch (InvalidOperationException ex)
@@ -355,4 +361,3 @@ namespace ProjectManagementSystem1.Controllers
 
     }
 }
-
