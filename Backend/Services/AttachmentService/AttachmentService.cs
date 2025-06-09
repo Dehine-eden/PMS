@@ -5,8 +5,6 @@ using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.Attachments;
 using ProjectManagementSystem1.Model.Entities;
 using PermissionType = ProjectManagementSystem1.Model.Entities.PermissionType;
-using ProjectManagementSystem1.Data;
-using ProjectManagementSystem1.Model.Dto.Attachments;
 
 namespace ProjectManagementSystem1.Services.AttachmentService
 {
@@ -74,13 +72,11 @@ namespace ProjectManagementSystem1.Services.AttachmentService
 
         public async Task<Attachment> GetAttachmentByIdAsync(Guid id)
         {
-           
+
             return await _context.Attachments
                 .Include(a => a.UploadedBy)
                 .Include(a => a.ProjectTask)
                 .FirstOrDefaultAsync(a => a.Id == id);
-
-            return await _context.Attachments.FindAsync(id);
         }
 
         public async Task<IEnumerable<Attachment>> GetAttachmentByEntityAsync(string entityType, Guid entityId)
@@ -124,7 +120,7 @@ namespace ProjectManagementSystem1.Services.AttachmentService
 
         public async Task<bool> RevokePermissionAsync(Guid attachmentId, string userId, string roleId, ProjectManagementSystem1.Model.Entities.PermissionType permissionType)
         {
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty (roleId))
+            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(roleId))
             {
                 return false;
             }
