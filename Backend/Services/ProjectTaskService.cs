@@ -569,7 +569,7 @@ namespace ProjectManagementSystem1.Services
                 if (parentTask == null)
                 {
                     Console.WriteLine($"Parent task with ID {parentTaskId} not found.");
-                    return; // Exit the method if the parent task doesn't exist
+                    return;
                 }
 
                 _context.Entry(parentTask).Reload();
@@ -584,8 +584,11 @@ namespace ProjectManagementSystem1.Services
                     {
                         foreach (var subtask in parentTask.SubTasks)
                         {
+                            // Reload each subtask to get the latest progress
+                            _context.Entry(subtask).Reload();
                             totalWeight += subtask.Weight;
                             weightedProgressSum += subtask.Progress * subtask.Weight;
+                            Console.WriteLine($"Subtask ID {subtask.Id} - Weight: {subtask.Weight}, Progress: {subtask.Progress}, Contribution: {subtask.Progress * subtask.Weight}");
                         }
                     }
 
@@ -594,28 +597,44 @@ namespace ProjectManagementSystem1.Services
                     {
                         foreach (var todoItem in parentTask.TodoItems)
                         {
+                            // Reload each todo item to get the latest progress
+                            _context.Entry(todoItem).Reload();
                             totalWeight += todoItem.Weight;
                             weightedProgressSum += todoItem.Progress * todoItem.Weight;
+                            Console.WriteLine($"TodoItem ID {todoItem.Id} - Weight: {todoItem.Weight}, Progress: {todoItem.Progress}, Contribution: {todoItem.Progress * todoItem.Weight}");
                         }
                     }
 
                     if (totalWeight > 0)
                     {
-                        parentTask.SetCalculatedProgress(weightedProgressSum / totalWeight);
-                        Console.WriteLine($"Calculated progress for parent task ID {parentTaskId}: {parentTask.Progress}");
+                        double newProgress = weightedProgressSum / totalWeight;
+                        Console.WriteLine($"Calculated progress for parent task ID {parentTaskId}: {newProgress} (from {weightedProgressSum}/{totalWeight})");
+
+                        // Only update if the progress has actually changed
+                        if (Math.Abs(parentTask.Progress - newProgress) > 0.01)
+                        {
+                            parentTask.SetCalculatedProgress(newProgress);
+                            parentTask.UpdatedAt = DateTime.UtcNow;
+                            _context.Entry(parentTask).State = EntityState.Modified;
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Progress for parent task ID {parentTaskId} hasn't changed significantly, skipping update.");
+                        }
                     }
                     else
                     {
+                        Console.WriteLine($"No subtasks or todo items found for parent task ID {parentTaskId}, setting progress to 0");
                         parentTask.SetCalculatedProgress(0);
+                        parentTask.UpdatedAt = DateTime.UtcNow;
+                        _context.Entry(parentTask).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
                     }
 
-                    parentTask.UpdatedAt = DateTime.UtcNow;
-                    _context.Entry(parentTask).State = EntityState.Modified;
-
-                    await _context.SaveChangesAsync();
-
+                    // Continue propagating the update up the hierarchy
                     Console.WriteLine($"Calling UpdateParentTaskProgressAsync recursively with parentTaskId: {parentTask.ParentTaskId}");
-                    await UpdateParentTaskProgressAsync(parentTask.ParentTaskId); // Recursive update
+                    await UpdateParentTaskProgressAsync(parentTask.ParentTaskId);
                 }
             }
         }
