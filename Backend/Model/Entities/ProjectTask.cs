@@ -74,8 +74,6 @@ namespace ProjectManagementSystem1.Model.Entities
         public bool IsAutoCreateTodo { get; set; } // Default to true
         public ICollection<TodoItem> TodoItems { get; set; } = new List<TodoItem>();
         public ICollection<ProjectTask> Dependencies { get; set; } = new List<ProjectTask>();
-        //public ICollection<TaskDependency> PredecessorDependencies { get; set; } = new List<TaskDependency>(); // Tasks that this task depends on
-        //public ICollection<TaskDependency> SuccessorDependencies { get; set; } = new List<TaskDependency>();   // Tasks that depend on this task
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if ((Priority == TaskPriority.High || Priority == TaskPriority.Critical) && !DueDate.HasValue)

@@ -90,28 +90,6 @@ namespace ProjectManagementSystem1.Controllers
             }
         }
 
-
-
-        // ------------------ DEPARTMENT MESSAGE ------------------
-
-        //[HttpPost("department")]
-        //public async Task<IActionResult> SendDepartmentMessage([FromBody] string content)
-        //{
-        //    var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //    var dept = User.FindFirst("Department")?.Value;
-
-        //    var dto = new CreateMessageDto
-        //    {
-        //        Content = content,
-        //        MessageType = 2, // Department
-        //        ReceiverId = null,
-        //        ProjectId = null
-        //    };
-
-        //    var message = await _messageService.SendMessageAsync(dto, senderId);
-        //    return Ok(message);
-        //}
-
         [HttpGet("department")]
         public async Task<IActionResult> GetDepartmentMessages()
         {
@@ -119,32 +97,6 @@ namespace ProjectManagementSystem1.Controllers
             var messages = await _messageService.GetDepartmentMessagesAsync(dept);
             return Ok(messages);
         }
-
-        // ------------------ PROJECT MESSAGE ------------------
-
-        //[HttpPost("project")]
-        //public async Task<IActionResult> SendProjectMessage([FromBody] CreateMessageDto dto)
-        //{
-        //    if (dto.ProjectId == null)
-        //        return BadRequest("ProjectId is required.");
-
-        //    var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    // Get all member IDs for this project
-        //    var memberIds = await _context.ProjectAssignments
-        //        .Where(pa => pa.ProjectId == dto.ProjectId)
-        //        .Select(pa => pa.MemberId)
-        //        .ToListAsync();
-
-        //    if (!memberIds.Contains(senderId))
-        //        return Forbid("You are not a member of this project.");
-
-        //    dto.MessageType = 1;
-        //    dto.ReceiverId = null;
-
-        //    var message = await _messageService.SendMessageAsync(dto, senderId);
-        //    return Ok(message);
-        //}
 
 
         [HttpGet("project")]
@@ -171,30 +123,6 @@ namespace ProjectManagementSystem1.Controllers
             var mapped = _mapper.Map<List<MessageDto>>(messages);
             return Ok(mapped);
         }
-
-
-        // ------------------ PERSONAL MESSAGE ------------------
-
-        //[HttpPost("personal")]
-        //public async Task<IActionResult> SendPersonalMessage([FromBody] CreateMessageDto dto)
-        //{
-        //    if (string.IsNullOrWhiteSpace(dto.ReceiverId))
-        //        return BadRequest("Receiver EmployeeId is required.");
-
-        //    var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    // Convert EmployeeId to internal user Id
-        //    var receiverUser = await _userService.GetUserByEmployeeIdAsync(dto.ReceiverId);
-        //    if (receiverUser == null)
-        //        return NotFound("Receiver not found.");
-
-        //    dto.ReceiverId = receiverUser.Id;
-        //    dto.ProjectId = null;
-        //    dto.MessageType = 3;
-
-        //    var message = await _messageService.SendMessageAsync(dto, senderId);
-        //    return Ok(message);
-        //}
 
         [HttpGet("personal")]
         public async Task<IActionResult> GetPersonalMessages()

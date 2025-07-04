@@ -157,10 +157,7 @@ namespace ProjectManagementSystem1.Services.AttachmentService
                 return true;
             }
 
-            //if (permissionType == PermissionType.View && attachment.UploadedByUserId == userId)
-            //{
-            //    return true;
-            //}
+            
             // Check if there's a direct permission for the user
             var userPermission = await _context.AttachmentPermissions.AnyAsync(
                 p => p.AttachmentId == attachmentId &&

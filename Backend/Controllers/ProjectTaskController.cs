@@ -196,60 +196,7 @@ namespace ProjectManagementSystem1.Controllers
             return Ok(MapToResponseDto(updatedTask));
         }
 
-        //[HttpPut("{taskId}/accept")]
-        //public async Task<IActionResult> AcceptTask(int taskId)
-        //{
-        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //    if (string.IsNullOrEmpty(memberId))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    try
-        //    {
-        //        await _projectTaskService.AcceptTaskAsync(taskId, memberId);
-        //        return Ok();
-        //    }
-        //    catch (NotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
-        //[HttpPut("{taskId}/reject")]
-        //public async Task<IActionResult> RejectTask(int taskId, [FromBody] RejectTaskDto rejectDto)
-        //{
-        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    if (string.IsNullOrEmpty(memberId))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    if (string.IsNullOrWhiteSpace(rejectDto?.Reason))
-        //    {
-        //        return BadRequest("Rejection reason is required.");
-        //    }
-
-        //    try
-        //    {
-        //        await _projectTaskService.RejectTaskAsync(taskId, memberId, rejectDto.Reason);
-        //        return Ok();
-        //    }
-        //    catch (NotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
+        
         [HttpPost("{taskId}/comments")]
         public async Task<IActionResult> AddComment(int taskId, [FromBody] AddCommentDto commentDto)
         {
@@ -377,59 +324,7 @@ namespace ProjectManagementSystem1.Controllers
             catch (Exception ex) { return StatusCode(500, "An error occurred while rejecting the project task completion."); }
         }
 
-        //[HttpPost("{successorTaskId}/dependencies/{predecessorTaskId}")]
-        //public async Task<IActionResult> AddDependency(int successorTaskId, int predecessorTaskId)
-        //{
-        //    try
-        //    {
-        //        await _projectTaskService.AddDependencyAsync(predecessorTaskId, successorTaskId);
-        //        return NoContent(); // Return 204 No Content for successful operation
-        //    }
-        //    catch (NotFoundException ex)
-        //    {
-        //        return NotFound(ex.Message); // Return 404 Not Found if either task doesn't exist
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message); // Return 400 Bad Request if dependency already exists or other invalid operation
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the error
-        //        return StatusCode(500, "An error occurred while adding the dependency.");
-        //    }
-        //}
-        //[HttpDelete("{successorTaskId}/dependencies/{predecessorTaskId}")]
-        //public async Task<IActionResult> RemoveDependency(int successorTaskId, int predecessorTaskId)
-        //{
-        //    try
-        //    {
-        //        await _projectTaskService.RemoveDependencyAsync(predecessorTaskId, successorTaskId);
-        //        return NoContent(); // Return 204 No Content for successful operation
-        //    }
-        //    catch (NotFoundException ex)
-        //    {
-        //        return NotFound(ex.Message); // Return 404 Not Found if either task or dependency doesn't exist
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the error
-        //        return StatusCode(500, "An error occurred while removing the dependency.");
-        //    }
-        //}
-        //[HttpGet("{taskId}/predecessors")]
-        //public async Task<ActionResult<IEnumerable<ProjectTaskReadDto>>> GetPredecessors(int taskId)
-        //{
-        //    var predecessors = await _projectTaskService.GetPredecessorsAsync(taskId);
-        //    return Ok(predecessors);
-        //}
-
-        //[HttpGet("{taskId}/successors")]
-        //public async Task<ActionResult<IEnumerable<ProjectTaskReadDto>>> GetSuccessors(int taskId)
-        //{
-        //    var successors = await _projectTaskService.GetSuccessorsAsync(taskId);
-        //    return Ok(successors);
-        //}
+       
         // DELETE: api/ProjectTask/{id}
 
         [HttpDelete("Delete-task")]

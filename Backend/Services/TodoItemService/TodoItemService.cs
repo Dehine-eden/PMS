@@ -104,71 +104,7 @@ namespace ProjectManagementSystem1.Services.TodoItems
             return true;
         }
 
-        //public async Task AcceptTodoItemAsync(int id, string memberId)
-        //{
-        //    var todoItem = await _context.TodoItems
-        //                    .Include(ti => ti.ProjectTask)
-        //                    .FirstOrDefaultAsync(ti => ti.Id == id);
-
-        //    if (todoItem == null)
-        //    {
-        //        throw new NotFoundException($"TodoItem with ID '{id}' not found.");
-        //    }
-
-        //    if (todoItem.Status == TodoItemStatus.Pending || todoItem.Status == TodoItemStatus.Rejected)
-        //    {
-        //        todoItem.Status = TodoItemStatus.Accepted;
-        //        await _context.SaveChangesAsync();
-        //        await _projectTaskService.UpdateParentTaskProgressAsync(todoItem.ProjectTaskId);
-
-        //        if (todoItem.Status == TodoItemStatus.Pending || todoItem.Status == TodoItemStatus.Rejected)
-        //        {
-        //            todoItem.Status = TodoItemStatus.Accepted;
-        //            await _context.SaveChangesAsync();
-        //            await _projectTaskService.UpdateParentTaskProgressAsync(todoItem.ProjectTaskId);
-
-        //            // Update parent ProjectTask status
-        //            if (todoItem.ProjectTask != null)
-        //            {
-        //                var projectTask = await _context.ProjectTasks
-        //                    .Include(pt => pt.TodoItems)
-        //                    .FirstOrDefaultAsync(pt => pt.Id == todoItem.ProjectTaskId);
-
-        //                if (projectTask != null)
-        //                {
-        //                    if (projectTask.TodoItems.Any(ti => ti.Status == TodoItemStatus.Accepted))
-        //                    {
-        //                        projectTask.Status = TaskStatus.Accepted;
-        //                    }
-        //                    else if (projectTask.TodoItems.All(ti => ti.Status == TodoItemStatus.Pending || ti.Status == TodoItemStatus.Rejected))
-        //                    {
-        //                        projectTask.Status = TaskStatus.Pending;
-        //                    }
-        //                    // You can add more conditions here for other statuses like Completed or Rejected of the ProjectTask
-        //                    await _context.SaveChangesAsync();
-        //                }
-        //            }
-        //        }
-        //        // Enhancement: If the parent task has subtasks and the user is assigned, accept their todo items too
-        //        if (todoItem.ProjectTask?.SubTasks != null && todoItem.ProjectTask.SubTasks.Any() && todoItem.ProjectTask.AssignedMemberId == memberId)
-        //        {
-        //            foreach (var subtask in todoItem.ProjectTask.SubTasks)
-        //            {
-        //                var subtaskTodo = await _context.TodoItems
-        //                    .FirstOrDefaultAsync(sti => sti.ProjectTaskId == subtask.Id && sti.ProjectTask.AssignedMemberId == memberId);
-        //                if (subtaskTodo != null && (subtaskTodo.Status == TodoItemStatus.Pending || subtaskTodo.Status == TodoItemStatus.Rejected))
-        //                {
-        //                    subtaskTodo.Status = TodoItemStatus.Accepted;
-        //                    await _context.SaveChangesAsync();
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        throw new InvalidOperationException($"TodoItem with ID '{id}' is not in a Pending or Rejected state and cannot be accepted.");
-        //    }
-        //}
+        
 
         public async Task AcceptAssignmentAsync(int id, string memberId)
         {
@@ -226,31 +162,7 @@ namespace ProjectManagementSystem1.Services.TodoItems
             }
         }
 
-        //public async Task RejectTodoItemAsync(int id, string memberId, string reason)
-        //{
-        //    var todoItem = await _context.TodoItems.FindAsync(id);
-        //    if (todoItem == null)
-        //    {
-        //        throw new NotFoundException($"TodoItem with ID '{id}' not found.");
-        //    }
-
-        //    if (string.IsNullOrWhiteSpace(reason))
-        //    {
-        //        throw new InvalidOperationException("Rejection reason is required.");
-        //    }
-
-        //    if (todoItem.Status == TodoItemStatus.Pending || todoItem.Status == TodoItemStatus.Accepted)
-        //    {
-        //        todoItem.Status = TodoItemStatus.Rejected;
-        //        // Optionally store the reason somewhere if needed
-        //        await _context.SaveChangesAsync();
-        //        await _projectTaskService.UpdateParentTaskProgressAsync(todoItem.ProjectTaskId); // Update parent progress
-        //    }
-        //    else
-        //    {
-        //        throw new InvalidOperationException($"TodoItem with ID '{id}' is not in a Pending or Accepted state and cannot be rejected.");
-        //    }
-        //}
+        
 
         public async Task RejectAssignmentAsync(int id, string memberId, string reason)
         {
@@ -409,29 +321,6 @@ namespace ProjectManagementSystem1.Services.TodoItems
             }
         }
 
-        //public async Task RejectCompletedTodoItemAsync(int id, string teamLeaderId, string reason)
-        //{
-        //    var todoItem = await _context.TodoItems.FindAsync(id);
-
-        //    if (todoItem == null)
-        //    {
-        //        throw new NotFoundException($"TodoItem with ID '{id}' not found.");
-        //    }
-
-        //    if (todoItem.Status == TodoItemStatus.Completed)
-        //    {
-        //        todoItem.Status = TodoItemStatus.Rejected;
-        //        todoItem.ReasonForLateCompletion = reason;
-        //        await _context.SaveChangesAsync();
-
-        //        _activityLogService.LogActivityAsync(teamLeaderId, "TodoItem", id, "Rejected", $"Todo item '{todoItem.Title}' rejected with reason: '{reason}'.");
-        //    }
-        //    else
-        //    {
-        //        throw new InvalidOperationException($"TodoItem with ID '{id}' is not in a state where it can be rejected (Current status: {todoItem.Status}).");
-
-        //    }
-        //}
         private TodoItemReadDto MapToReadDto(TodoItem todoItem)
         {
             return new TodoItemReadDto

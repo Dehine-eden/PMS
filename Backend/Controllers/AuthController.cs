@@ -80,12 +80,5 @@ namespace ProjectManagementSystem1.Controllers
             return Ok(new { message = "Logged out successfully." });
         }
 
-        //[HttpPost("logout")]
-        //[Authorize]
-        //public async Task<IActionResult> Logout()
-        //{
-        //    await _authService.LogoutAsync();
-        //    return Ok(new { message = "Logged out successfully." });
-        //}
     }
 }
