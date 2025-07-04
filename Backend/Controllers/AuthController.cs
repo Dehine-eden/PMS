@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.UserManagementDto;
 using ProjectManagementSystem1.Model.Entities;
-using ProjectManagementSystem1.Services;
 
 namespace ProjectManagementSystem1.Controllers
 {

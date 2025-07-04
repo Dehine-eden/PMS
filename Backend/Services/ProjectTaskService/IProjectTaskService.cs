@@ -2,7 +2,7 @@
 using ProjectManagementSystem1.Model.Entities;
 using System.Threading.Tasks;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.ProjectTaskService
 {
     public interface IProjectTaskService
     {

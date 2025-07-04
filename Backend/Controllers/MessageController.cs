@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.Message;
 using ProjectManagementSystem1.Model.Entities;
-using ProjectManagementSystem1.Services;
 using System.Security.Claims;
 
 namespace ProjectManagementSystem1.Controllers

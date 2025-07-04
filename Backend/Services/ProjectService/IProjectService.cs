@@ -1,6 +1,6 @@
 ﻿using ProjectManagementSystem1.Model.Dto.ProjectManagementDto;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.ProjectService
 {
     public interface IProjectService
     {

@@ -4,7 +4,7 @@ using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.Message;
 using ProjectManagementSystem1.Model.Entities;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.MessageService
 {
     public class MessageService : IMessageService
     {

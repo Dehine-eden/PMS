@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManagementSystem1.Model.Dto.UserManagementDto;
 using ProjectManagementSystem1.Model.Entities;
-using ProjectManagementSystem1.Services;
+using ProjectManagementSystem1.Services.ADService;
 
 namespace ProjectManagementSystem1.Controller
 {

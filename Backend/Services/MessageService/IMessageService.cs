@@ -1,6 +1,6 @@
 ﻿using ProjectManagementSystem1.Model.Dto.Message;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.MessageService
 {
     public interface IMessageService
     {
