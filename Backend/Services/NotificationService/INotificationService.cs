@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ProjectManagementSystem1.Services
-{
+namespace ProjectManagementSystem1.Services.NotificationService
+{ 
     public interface INotificationService
     {
         Task CreateNotificationAsync(string recipientUserId, string subject, string message, string relatedEntityType, int relatedEntityId, NotificationDeliveryMethod deliveryMethod, DateTime? scheduledSendTime = null);

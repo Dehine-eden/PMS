@@ -1,12 +1,11 @@
 ﻿using System.DirectoryServices;
 using System.Reflection.PortableExecutable;
-using ProjectManagementSystem1.Services;
 using ProjectManagementSystem1.Model;
 using ProjectManagementSystem1.Model.Entities;
 using System.Text.Json;
 using ProjectManagementSystem1.Model.Dto.UserManagementDto;
 
-namespace ProjectManagementSystem.Services
+namespace ProjectManagementSystem1.Services.ADService
 {
     public class ADService : IADService
     {
@@ -85,7 +84,7 @@ namespace ProjectManagementSystem.Services
             });
         }
 
-        
+
         public async Task<ADUserDto?> GetUserByEmployeeIdAsync(string employeeId)
         {
             return await Task.Run(() =>

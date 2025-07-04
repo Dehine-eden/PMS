@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.ProjectManagementDto;
-using ProjectManagementSystem1.Services;
 using System.Security.Claims;
 
 namespace ProjectManagementSystem1.Controllers

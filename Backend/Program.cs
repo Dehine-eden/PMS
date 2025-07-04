@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ProjectManagementSystem.Services;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Helpers;
 using ProjectManagementSystem1.Middleware;
@@ -25,6 +24,16 @@ using Hangfire;
 using Hangfire.SqlServer;
 using ProjectManagementSystem1.Configuration;
 using ProjectManagementSystem1.Services.MilestoneService;
+using ProjectManagementSystem1.Services.CommentService;
+using ProjectManagementSystem1.Services.ProjectService;
+using ProjectManagementSystem1.Services.ProjectTaskService;
+using ProjectManagementSystem1.Services.MessageService;
+using ProjectManagementSystem1.Services.NotificationService;
+using ProjectManagementSystem1.Services.ADService;
+using ProjectManagementSystem1.Services.UserService;
+using ProjectManagementSystem1.Services.AuthService;
+using ProjectManagementSystem1.Services.JwtService;
+using ProjectManagementSystem1.Data.Seeders;
 
 
 

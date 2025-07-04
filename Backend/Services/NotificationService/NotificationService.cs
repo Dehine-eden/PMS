@@ -9,7 +9,7 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.NotificationService
 {
     public class NotificationService : INotificationService
     {

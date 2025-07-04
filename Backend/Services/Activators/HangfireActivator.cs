@@ -1,6 +1,6 @@
 ﻿using Hangfire;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.Activators
 {
     public class HangfireActivator : JobActivator
     {

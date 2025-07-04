@@ -6,8 +6,9 @@ using NuGet.Common;
 using ProjectManagementSystem1.Data;
 using ProjectManagementSystem1.Model.Dto.UserManagementDto;
 using ProjectManagementSystem1.Model.Entities;
+using ProjectManagementSystem1.Services.JwtService;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.AuthService
 {
     public class AuthService : IAuthService
     {

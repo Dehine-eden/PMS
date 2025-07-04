@@ -1,6 +1,6 @@
 ﻿using ProjectManagementSystem1.Model.Entities;
 
-namespace ProjectManagementSystem1.Services
+namespace ProjectManagementSystem1.Services.CommentService.CommentService
 {
     public interface ICommentService
     {
