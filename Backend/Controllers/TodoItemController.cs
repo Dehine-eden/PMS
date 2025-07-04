@@ -63,53 +63,7 @@ namespace ProjectManagementSystem1.Controllers
             return CreatedAtAction(nameof(GetTodoItemById), new { id = todoItem.Id }, todoItem);
         }
 
-        //[HttpPut("{id}/accept")]
-        //public async Task<IActionResult> AcceptTodoItem(int id)
-        //{
-        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //    if (string.IsNullOrEmpty(memberId))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    try
-        //    {
-        //        await _todoItemService.AcceptTodoItemAsync(id, memberId);
-        //        return Ok();
-        //    }
-        //    catch (NotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
-        //[HttpPut("{id}/reject")]
-        //public async Task<IActionResult> RejectTodoItem(int id, [FromBody] RejectTodoItemDto rejectDto)
-        //{
-        //    var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //    if (string.IsNullOrEmpty(memberId))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    try
-        //    {
-        //        await _todoItemService.RejectTodoItemAsync(id, memberId, rejectDto.Reason);
-        //        return Ok();
-        //    }
-        //    catch (NotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
+       
 
         [HttpPut("{id}/acceptassignment")]
         public async Task<IActionResult> AcceptAssignment(int id)

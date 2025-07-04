@@ -50,6 +50,10 @@ namespace ProjectManagementSystem1.Model.Entities
         public DateTime? DueDate { get; set; }
         public string? RejectionReason { get; set; }
 
+        public int? IndependentTaskId { get; set; }
+        [ForeignKey("IndependentTaskId")]
+        public IndependentTask IndependentTask { get; set; }
+
         public TodoItemStatus Status { get; set; } = TodoItemStatus.Pending;
         string IRemindable.RecipientUserId => ProjectTask?.AssignedMemberId;
         string IRemindable.ReminderSubjectTemplate => "Reminder: Todo Item '{Title}' Due Soon";

@@ -102,10 +102,5 @@ namespace ProjectManagementSystem1.Services
             await context.SaveChangesAsync();
         }
 
-
-        //public async Task LogoutAsync()
-        //{
-        //    await _signInManager.SignOutAsync();
-        //}
     }
 }

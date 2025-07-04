@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Humanizer;
 using ProjectManagementSystem1.Model.Dto;
+using ProjectManagementSystem1.Model.Dto.IndependentTaskDto;
 using ProjectManagementSystem1.Model.Dto.Message;
 using ProjectManagementSystem1.Model.Dto.MilestoneDto;
 using ProjectManagementSystem1.Model.Dto.ProjectAssignmentDto;
 using ProjectManagementSystem1.Model.Dto.ProjectManagementDto;
+using ProjectManagementSystem1.Model.Dto.TodoItemsDto;
 using ProjectManagementSystem1.Model.Entities;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -37,33 +39,21 @@ namespace ProjectManagementSystem1.Helpers
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => System.DateTime.UtcNow))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<ProjectTaskCreateDto, ProjectTask>();
-            //CreateMap<ProjectTask, ProjectTaskDto>()
-            //    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            //    .ForMember(dest => dest.AssignmentStatus, opt => opt.MapFrom(src => src.AssignmentStatus.ToString()))
-            //    .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()));
 
-            //        CreateMap<ProjectTask, ProjectTaskReadDto>()
-            //       .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            //       .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()));
+            CreateMap<IndependentTask, IndependentTaskReadDto>()
+                            .ForMember(dest => dest.CreatedByUserId, opt =>
+                                opt.MapFrom(src => src.CreatedByUser.FullName))
+                            .ForMember(dest => dest.AssignedToUserId, opt =>
+                                opt.MapFrom(src => src.AssignedToUser.FullName));
 
-            //        CreateMap<ProjectTaskCreateDto, ProjectTask>()
-            //        .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore()) // Set manually in service
-            //        .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore()) // Set manually in service
-            //        .ForMember(dest => dest.Id, opt => opt.Ignore())
-            //        .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-            //        .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
-            //        //.ForMember(dest => dest.Id, opt => opt.Ignore())
-            //        //.ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
-            //        //.ForMember(dest => dest.UpdatedDate, opt => opt.Ignore());
+            CreateMap<IndependentTaskCreateDto, IndependentTask>();
 
-            //        CreateMap<ProjectTask, ProjectTaskCreateDto>();
-            //        CreateMap<ProjectTaskUpdateDto, ProjectTask>()
-            //          .ForMember(dest => dest.Id, opt => opt.Ignore())
-            //          .ForMember(dest => dest.ProjectAssignmentId, opt => opt.Ignore())
-            //          .ForMember(dest => dest.AssignedMemberId, opt => opt.Ignore())
-            //           .ForAllMembers(opts => opts.Condition((src, dest, srcMember) =>
-            //    srcMember != null // Only update fields that are NOT null in the DTO
-            //));
+            CreateMap<IndependentTaskUpdateDto, IndependentTask>()
+                .ForMember(dest => dest.TaskId, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedByUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+
+            
         }
 
     }
