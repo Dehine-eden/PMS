@@ -6,8 +6,6 @@ obj/
 .vscode/
 
 # Secrets
-appsettings.json
-secrets.json
 
 # System files
 .DS_Store
@@ -17,7 +15,6 @@ Thumbs.db
 *.log
 
 # Environment
-.env
 
 **/Migrations/
 
