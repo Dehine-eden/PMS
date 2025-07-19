@@ -11,10 +11,3 @@ obj/
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
-# Environment
-
-**/Migrations/
-
