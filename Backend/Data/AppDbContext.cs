@@ -23,6 +23,9 @@ namespace ProjectManagementSystem1.Data
         public DbSet<AttachmentPermission> AttachmentPermissions { get; set; }
         public DbSet<ActivityLog> ActivityLogs { get; set; }
         //public DbSet<TaskDependency> TaskDependencies { get; set; }
+        public DbSet<ErpUser> ErpUsers { get; set; }
+        public DbSet<MessageReadStatus> MessageReadStatuses { get; set; }
+
 
         public DbSet<IndependentTask> IndependentTasks { get; set; }
         public DbSet<PersonalTodo> PersonalTodo { get; set; }
@@ -87,6 +90,19 @@ namespace ProjectManagementSystem1.Data
                 .WithMany() // Or a navigation property in ApplicationUser
                 .HasForeignKey(pt => pt.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Or DeleteBehavior.NoAction
+
+            modelBuilder.Entity<MessageReadStatus>()
+                .HasOne(mrs => mrs.Message)
+                .WithMany(m => m.ReadStatuses)
+                .HasForeignKey(mrs => mrs.MessageId)
+                .OnDelete(DeleteBehavior.Restrict); // 👈 prevent cascade delete
+
+            modelBuilder.Entity<MessageReadStatus>()
+                .HasOne(mrs => mrs.User)
+                .WithMany()
+                .HasForeignKey(mrs => mrs.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             // Prevent circular references via SQL trigger (optional)
             //entity.HasCheckConstraint("CK_NoSelfReference", "ParentTaskId <> Id");

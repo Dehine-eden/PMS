@@ -35,6 +35,7 @@ using ProjectManagementSystem1.Services.AuthService;
 using ProjectManagementSystem1.Services.JwtService;
 using ProjectManagementSystem1.Data.Seeders;
 using ProjectManagementSystem1.Services.Activators;
+using ProjectManagementSystem1.Services.ErpUserService;
 
 
 
@@ -89,7 +90,10 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IIndependentTaskService, IndependentTaskService>();
 builder.Services.AddScoped<IPersonalTodoService, PersonalTodoService>();
-builder.Services.AddHttpContextAccessor(); 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient(); // for HttpClient injection
+builder.Services.AddScoped<IErpUserService, ErpUserService>();
+
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 // Add services to the container.

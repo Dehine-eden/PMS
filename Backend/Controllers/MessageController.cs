@@ -132,5 +132,100 @@ namespace ProjectManagementSystem1.Controllers
             var messages = await _messageService.GetPersonalMessagesAsync(currentUserId);
             return Ok(messages);
         }
+
+        [HttpPut("edit")]
+        public async Task<IActionResult> EditMessage([FromBody] EditMessageDto dto)
+        {
+            var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var result = await _messageService.EditMessageAsync(dto, senderId);
+                return result ? Ok("✅ Message edited.") : BadRequest("Failed to edit message.");
+            }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpDelete("delete/{messageId}")]
+        public async Task<IActionResult> DeleteMessage(int messageId)
+        {
+            var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var result = await _messageService.SoftDeleteMessageAsync(messageId, senderId);
+                return result ? Ok("🗑️ Message deleted (soft).") : BadRequest("Failed to delete.");
+            }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        //[HttpGet("Personal-unread-count")]
+        //[Authorize]
+        //public async Task<IActionResult> GetUnreadMessageCount()
+        //{
+        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //    if (string.IsNullOrEmpty(userId))
+        //        return Unauthorized("Invalid user");
+
+        //    var count = await _messageService.GetUnreadMessageCountAsync(userId);
+        //    return Ok(new { unreadCount = count });
+        //}
+
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Personal messages
+            var personalUnread = await _context.Messages
+                .Where(m => m.MessageType == 3 && m.ReceiverId == userId && !m.IsRead)
+                .CountAsync();
+
+            // Group messages
+            var groupUnread = await _context.MessageReadStatuses
+                .Where(r => r.UserId == userId && !r.IsRead)
+                .CountAsync();
+
+            return Ok(new { personalUnread, groupUnread, total = personalUnread + groupUnread });
+        }
+
+        [HttpPost("mark-read/{messageId}")]
+        [Authorize]
+        public async Task<IActionResult> MarkMessageAsRead(int messageId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var message = await _context.Messages
+                .FirstOrDefaultAsync(m => m.MessageId == messageId && m.ReceiverId == userId);
+
+            if (message == null) return NotFound("Message not found or access denied.");
+
+            message.IsRead = true;
+            //message.UpdatedDate = DateTime.UtcNow;
+            //message.UpdateUser = userId;
+
+            await _context.SaveChangesAsync();
+            return Ok("✅ Message marked as read.");
+        }
+
+        [HttpPost("mark-group-message-read/{messageId}")]
+        public async Task<IActionResult> MarkGroupMessageAsRead(int messageId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var status = await _context.MessageReadStatuses
+                .FirstOrDefaultAsync(r => r.MessageId == messageId && r.UserId == userId);
+
+            if (status == null)
+                return NotFound("Message not assigned or already marked.");
+
+            if (status.IsRead)
+                return BadRequest("Already marked as read.");
+
+            status.IsRead = true;
+            status.ReadTime = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok("✅ Group message marked as read.");
+        }
+
     }
 }

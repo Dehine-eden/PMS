@@ -40,6 +40,8 @@ namespace ProjectManagementSystem1.Model.Entities
         public DateTime? TimeEdited { get; set; }
 
         public bool IsDeleted { get; set; } = false;
+        public bool IsRead { get; set; } = false;
+        public ICollection<MessageReadStatus> ReadStatuses { get; set; }
 
         [Timestamp]
         public byte[] Version { get; set; }
