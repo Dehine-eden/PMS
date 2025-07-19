@@ -6,18 +6,12 @@ obj/
 .vscode/
 
 # Secrets
-appsettings.json
-secrets.json
 
 # System files
 .DS_Store
 Thumbs.db
 
 # Logs
-*.log
+
 
 # Environment
-.env
-
-**/Migrations/
-
