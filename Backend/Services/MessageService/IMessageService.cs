@@ -9,6 +9,10 @@ namespace ProjectManagementSystem1.Services.MessageService
         Task<List<MessageDto>> GetDepartmentMessagesAsync(string department);
         Task<List<MessageDto>> GetPersonalMessagesAsync(string userId);
         Task<List<MessageDto>> GetProjectMessagesForUserAsync(string userId);
+        Task<bool> EditMessageAsync(EditMessageDto dto, string senderId);
+        Task<bool> SoftDeleteMessageAsync(int messageId, string senderId);
+        Task<int> GetUnreadMessageCountAsync(string userId);
+
 
     }
 

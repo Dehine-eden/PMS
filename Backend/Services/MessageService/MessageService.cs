@@ -23,9 +23,9 @@ namespace ProjectManagementSystem1.Services.MessageService
             if (sender == null)
                 throw new Exception("Sender not found.");
 
-            // Validation
+
             if (dto.MessageType < 1 || dto.MessageType > 3)
-                throw new ArgumentException("MessageType must be 1, 2, or 3.");
+                throw new ArgumentException("MessageType must be 1 (Project), 2 (Department), or 3 (Personal).");
 
             if (dto.MessageType == 1 && dto.ProjectId == null)
                 throw new ArgumentException("ProjectId is required for project messages.");
@@ -40,17 +40,42 @@ namespace ProjectManagementSystem1.Services.MessageService
             var message = new Message
             {
                 Content = dto.Content,
-                SenderId = sender.Id, // keep user Id
+                SenderId = sender.Id,
                 ReceiverId = dto.ReceiverId,
                 ProjectId = dto.ProjectId,
                 MessageType = dto.MessageType,
                 AttachmentId = dto.AttachmentId,
                 TimeSent = DateTime.UtcNow,
-                IsDeleted = false
+                IsDeleted = false,
+                IsRead = false
             };
 
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
+
+            // ✅ Handle group read tracking for Project/Department messages
+            if (dto.MessageType == 1 || dto.MessageType == 2)
+            {
+                var recipients = dto.MessageType == 1
+                    ? await _context.ProjectAssignments
+                        .Where(pa => pa.ProjectId == dto.ProjectId && pa.MemberId != sender.Id)
+                        .Select(pa => pa.MemberId)
+                        .ToListAsync()
+                    : await _context.Users
+                        .Where(u => u.Department == sender.Department && u.Id != sender.Id)
+                        .Select(u => u.Id)
+                        .ToListAsync();
+
+                var readStatuses = recipients.Select(uid => new MessageReadStatus
+                {
+                    MessageId = message.MessageId,
+                    UserId = uid,
+                    IsRead = false
+                });
+
+                _context.MessageReadStatuses.AddRange(readStatuses);
+                await _context.SaveChangesAsync();
+            }
 
             message = await _context.Messages
                 .Include(m => m.Sender)
@@ -105,13 +130,13 @@ namespace ProjectManagementSystem1.Services.MessageService
 
         public async Task<List<MessageDto>> GetProjectMessagesForUserAsync(string userId)
         {
-            // Get all project IDs where the user is a member
+
             var projectIds = await _context.ProjectAssignments
                 .Where(pa => pa.MemberId == userId)
                 .Select(pa => pa.ProjectId)
                 .ToListAsync();
 
-            // Get messages only from those projects
+
             var messages = await _context.Messages
                 .Include(m => m.Sender)
                 .Where(m =>
@@ -125,6 +150,63 @@ namespace ProjectManagementSystem1.Services.MessageService
             return _mapper.Map<List<MessageDto>>(messages);
         }
 
-    }
+        public async Task<bool> EditMessageAsync(EditMessageDto dto, string senderId)
+        {
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.MessageId == dto.MessageId);
+            if (message == null) throw new ArgumentException("Message not found.");
+            if (message.SenderId != senderId) throw new UnauthorizedAccessException("You can only edit your own messages.");
+            if (message.IsDeleted) throw new InvalidOperationException("Cannot edit a deleted message.");
 
+            message.Content = dto.NewContent;
+            message.TimeEdited = DateTime.UtcNow;
+            message.Version = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteMessageAsync(int messageId, string senderId)
+        {
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.MessageId == messageId);
+            if (message == null) throw new ArgumentException("Message not found.");
+            if (message.SenderId != senderId) throw new UnauthorizedAccessException("You can only delete your own messages.");
+            if (message.IsDeleted) return true;
+
+            message.IsDeleted = true;
+            message.TimeEdited = DateTime.UtcNow;
+            message.Version = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<int> GetUnreadMessageCountAsync(string userId)
+        {
+            // Count unread personal messages
+            var personalUnread = await _context.Messages
+                .Where(m => m.MessageType == 3 && m.ReceiverId == userId && !m.IsRead && !m.IsDeleted)
+                .CountAsync();
+
+            // Count unread group messages
+            var groupUnread = await _context.MessageReadStatuses
+                .Where(mrs => mrs.UserId == userId && !mrs.IsRead)
+                .CountAsync();
+
+            return personalUnread + groupUnread;
+        }
+
+        public async Task<bool> MarkGroupMessageAsRead(int messageId, string userId)
+        {
+            var status = await _context.MessageReadStatuses
+                .FirstOrDefaultAsync(r => r.MessageId == messageId && r.UserId == userId);
+
+            if (status == null || status.IsRead) return false;
+
+            status.IsRead = true;
+            status.ReadTime = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+    }
 }
