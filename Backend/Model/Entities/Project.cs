@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ProjectManagementSystem1.Model.Entities;
 
 public class Project
 {
@@ -37,5 +38,5 @@ public class Project
 
     public bool IsAutomateTodo { get; set; } = true; // Default to true
     public ICollection<ProjectAssignment> ProjectAssignments { get; set; }
-
+    public virtual ICollection<Issue> Issues { get; set; } = new List<Issue>(); // Navigation property
 }

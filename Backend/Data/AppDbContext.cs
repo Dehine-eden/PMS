@@ -25,6 +25,7 @@ namespace ProjectManagementSystem1.Data
         //public DbSet<TaskDependency> TaskDependencies { get; set; }
         public DbSet<ErpUser> ErpUsers { get; set; }
         public DbSet<MessageReadStatus> MessageReadStatuses { get; set; }
+        public DbSet<Issue> Issues { get; set; }
 
 
         public DbSet<IndependentTask> IndependentTasks { get; set; }
@@ -97,11 +98,36 @@ namespace ProjectManagementSystem1.Data
                 .HasForeignKey(mrs => mrs.MessageId)
                 .OnDelete(DeleteBehavior.Restrict); // 👈 prevent cascade delete
 
+
             modelBuilder.Entity<MessageReadStatus>()
                 .HasOne(mrs => mrs.User)
                 .WithMany()
                 .HasForeignKey(mrs => mrs.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Issue>()
+                .HasKey(i => i.Id); // Defines Id as the primary key
+
+            modelBuilder.Entity<Issue>()
+                .Property(i => i.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Issue>()
+                .HasOne(i => i.Project)
+                .WithMany(p => p.Issues) // Assuming Project has a collection of Issues
+                .HasForeignKey(i => i.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Issue>()
+                .HasMany(i => i.ProjectTasks)
+                .WithOne(pt => pt.Issue) // Assuming ProjectTask has a navigation property for Issue
+                .HasForeignKey(pt => pt.IssueId) // Foreign key in ProjectTask
+                .OnDelete(DeleteBehavior.Cascade); // Or another behavior you prefer
+
+            modelBuilder.Entity<Issue>()
+                .HasMany(i => i.IndependentTasks)
+                .WithOne(it => it.Issue) // Assuming IndependentTask has a navigation property for Issue
+                .HasForeignKey(it => it.IssueId) // Foreign key in IndependentTask
+                .OnDelete(DeleteBehavior.Cascade); // Or another behavior you prefer
 
 
             // Prevent circular references via SQL trigger (optional)

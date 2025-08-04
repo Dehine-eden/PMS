@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem1.Data;
 
@@ -11,9 +12,11 @@ using ProjectManagementSystem1.Data;
 namespace ProjectManagementSystem1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250731130558_AddManagerFieldToUser")]
+    partial class AddManagerFieldToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -649,9 +652,6 @@ namespace ProjectManagementSystem1.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("IssueId")
-                        .HasColumnType("int");
-
                     b.Property<double>("Progress")
                         .HasColumnType("float");
 
@@ -677,72 +677,7 @@ namespace ProjectManagementSystem1.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("IssueId");
-
                     b.ToTable("IndependentTasks");
-                });
-
-            modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Issue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AssigneeId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("IndependentTaskId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PriorityValue")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ProjectTaskId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReporterId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("IndependentTaskId");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("ProjectTaskId");
-
-                    b.HasIndex("ReporterId");
-
-                    b.ToTable("Issues");
                 });
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Message", b =>
@@ -1006,9 +941,6 @@ namespace ProjectManagementSystem1.Migrations
                     b.Property<bool>("IsProjectRoot")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("IssueId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("MilestoneId")
                         .HasColumnType("int");
 
@@ -1048,8 +980,6 @@ namespace ProjectManagementSystem1.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IssueId");
 
                     b.HasIndex("MilestoneId");
 
@@ -1340,52 +1270,9 @@ namespace ProjectManagementSystem1.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.Issue", "Issue")
-                        .WithMany("IndependentTasks")
-                        .HasForeignKey("IssueId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("AssignedToUser");
 
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("Issue");
-                });
-
-            modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Issue", b =>
-                {
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.ApplicationUser", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId");
-
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.IndependentTask", "IndependentTask")
-                        .WithMany()
-                        .HasForeignKey("IndependentTaskId");
-
-                    b.HasOne("Project", "Project")
-                        .WithMany("Issues")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.ProjectTask", "ProjectTask")
-                        .WithMany()
-                        .HasForeignKey("ProjectTaskId");
-
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.ApplicationUser", "Reporter")
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Assignee");
-
-                    b.Navigation("IndependentTask");
-
-                    b.Navigation("Project");
-
-                    b.Navigation("ProjectTask");
-
-                    b.Navigation("Reporter");
                 });
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Message", b =>
@@ -1468,11 +1355,6 @@ namespace ProjectManagementSystem1.Migrations
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.ProjectTask", b =>
                 {
-                    b.HasOne("ProjectManagementSystem1.Model.Entities.Issue", "Issue")
-                        .WithMany("ProjectTasks")
-                        .HasForeignKey("IssueId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("ProjectManagementSystem1.Model.Entities.Milestone", "Milestone")
                         .WithMany()
                         .HasForeignKey("MilestoneId");
@@ -1491,8 +1373,6 @@ namespace ProjectManagementSystem1.Migrations
                     b.HasOne("ProjectManagementSystem1.Model.Entities.ProjectTask", null)
                         .WithMany("Dependencies")
                         .HasForeignKey("ProjectTaskId");
-
-                    b.Navigation("Issue");
 
                     b.Navigation("Milestone");
 
@@ -1550,21 +1430,12 @@ namespace ProjectManagementSystem1.Migrations
 
             modelBuilder.Entity("Project", b =>
                 {
-                    b.Navigation("Issues");
-
                     b.Navigation("ProjectAssignments");
                 });
 
             modelBuilder.Entity("ProjectAssignment", b =>
                 {
                     b.Navigation("Tasks");
-                });
-
-            modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Issue", b =>
-                {
-                    b.Navigation("IndependentTasks");
-
-                    b.Navigation("ProjectTasks");
                 });
 
             modelBuilder.Entity("ProjectManagementSystem1.Model.Entities.Message", b =>
