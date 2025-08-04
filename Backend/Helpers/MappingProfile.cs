@@ -20,12 +20,14 @@ namespace ProjectManagementSystem1.Helpers
             CreateMap<Project, ProjectDto>();
             CreateMap<CreateProjectDto, Project>();
             CreateMap<UpdateProjectDto, Project>();
+       
             CreateMap<CreateAssignmentDto, ProjectAssignment>();
             CreateMap<UpdateAssignmentDto, ProjectAssignment>(); // Map only non-null fields
             CreateMap<ProjectAssignment, AssignmentDto>()
-                //.ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
                 //.ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Project.Priority))
                 //.ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.Project.DueDate))
+                
                 .ForMember(dest => dest.MemberFullName, opt => opt.MapFrom(src => src.Member.FullName))
                 .ForMember(dest => dest.MemberId, opt => opt.MapFrom(src => src.Member.EmployeeId));
             CreateMap<CreateMessageDto, Message>();
