@@ -36,6 +36,7 @@ using ProjectManagementSystem1.Services.JwtService;
 using ProjectManagementSystem1.Data.Seeders;
 using ProjectManagementSystem1.Services.Activators;
 using ProjectManagementSystem1.Services.ErpUserService;
+using ProjectManagementSystem1.Services.IssueService;
 using ProjectManagementSystem1.Services.FileStorageService;
 using ProjectManagementSystem1.Services.AttachmentDownloadSercvice;
 using ProjectManagementSystem1.Services.ResourceAcessService;
@@ -109,6 +110,9 @@ builder.Services.AddScoped<IProjectMemberService, ProjectMemberService>();
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddHttpClient(); // for HttpClient injection
 builder.Services.AddScoped<IErpUserService, ErpUserService>();
+builder.Services.AddScoped<IIssueService, IssueService>();
+builder.Services.AddScoped<IADAuthService, ADAuthService>();
+
 // Add this where you configure services
 builder.Services.AddScoped<DownloadTokenService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();

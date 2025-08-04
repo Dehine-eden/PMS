@@ -103,5 +103,7 @@ namespace ProjectManagementSystem1.Model.Entities
         {
             _progress = progress;
         }
+        public int? IssueId { get; set; } // Foreign key to Issue
+        public virtual Issue Issue { get; set; } // Navigation property
     }
 }

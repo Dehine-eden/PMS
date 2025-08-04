@@ -10,6 +10,7 @@ namespace ProjectManagementSystem1.Model.Entities
         public string EmployeeId { get; set; }
         public string Department { get; set; }
         public string Title { get; set; }
+        public string? Manager { get; set; }
         public string Company { get; set; }
 
         public bool IsFirstLogin { get; set; } = true;

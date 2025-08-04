@@ -48,5 +48,7 @@ namespace ProjectManagementSystem1.Model.Entities
         // Navigation properties
         public virtual ApplicationUser CreatedByUser { get; set; }
         public virtual ApplicationUser AssignedToUser { get; set; }
+        public int? IssueId { get; set; } // Foreign key to Issue
+        public virtual Issue Issue { get; set; } // Navigation property
     }
 }
