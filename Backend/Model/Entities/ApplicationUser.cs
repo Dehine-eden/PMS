@@ -27,5 +27,7 @@ namespace ProjectManagementSystem1.Model.Entities
         public byte[]? Version { get; set; }
         
         public string? AccessToken { get; set; } //  Add this
+
+        public virtual ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     }
 }
