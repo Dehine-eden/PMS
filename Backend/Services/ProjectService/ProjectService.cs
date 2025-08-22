@@ -10,12 +10,14 @@ namespace ProjectManagementSystem1.Services.ProjectService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IAuthorizationService _authService;
         private readonly IProjectAssignmentService _projectAssignmentService;
 
-        public ProjectService(AppDbContext context, IMapper mapper, IProjectAssignmentService projectAssignmentService)
+        public ProjectService(AppDbContext context, IMapper mapper, IAuthorizationService authService, IProjectAssignmentService projectAssignmentService)
         {
             _context = context;
             _mapper = mapper;
+            _authService = authService;
             _projectAssignmentService = projectAssignmentService;
         }
 

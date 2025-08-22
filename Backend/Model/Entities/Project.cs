@@ -33,6 +33,18 @@ public class Project
     public string? CreateUser { get; set; }
     public string? UpdateUser { get; set; }
 
+    //Approval fields
+    public DateTime? ApprovalDate { get; set; }
+
+    public int? ApprovedById { get; set; }
+
+    [ForeignKey("ApprovedById")]
+    public User ApprovedBy { get; set; }
+
+    public string RejectionReason { get; set; }
+
+    public List<ApprovalRequest> ApprovalRequests { get; set; }
+
     [Timestamp]
     public byte[] Version { get; set; }
 

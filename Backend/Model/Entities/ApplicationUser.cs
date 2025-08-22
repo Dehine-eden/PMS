@@ -24,7 +24,18 @@ namespace ProjectManagementSystem1.Model.Entities
         public DateTime? ArchiveDate { get; internal set; }
         public DateTime? LastLogin { get; set; }
         public DateTime? LastPasswordChange { get; set; }
+        public int? ManagerId { get; set; }
+
+        [JsonIgnore]
+        public User Manager { get; set; }
+        [JsonIgnore]
+        public List<User> Subordinates { get; set; }
+        [JsonIgnore]
+        public List<Project> CreatedProjects { get; set; }
+        [JsonIgnore]
+        public List<ApprovalRequest> ApprovalRequests { get; set; }
         [Timestamp]
+
         public byte[]? Version { get; set; }
         
         public string? AccessToken { get; set; } //  Add this

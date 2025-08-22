@@ -45,6 +45,19 @@ namespace ProjectManagementSystem1.Model.Entities
         {    
         "Not Started", "In Progress", "Completed", "On Hold", "Cancelled"
         };
+
+        //Approval fields
+        public DateTime? ApprovalDate { get; set; }
+
+        public int? ApprovedById { get; set; }
+
+        [ForeignKey("ApprovedById")]
+        public User ApprovedBy { get; set; }
+
+        public string RejectionReason { get; set; }
+
+        public List<ApprovalRequest> ApprovalRequests { get; set; }
+
         // Navigation properties
         public virtual ApplicationUser CreatedByUser { get; set; }
         public virtual ApplicationUser AssignedToUser { get; set; }

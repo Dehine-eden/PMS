@@ -19,6 +19,12 @@ namespace ProjectManagementSystem1.Model.Dto.IndependentTaskDto
         [MaxLength(50)]
         public string Status { get; set; } = "NotStarted"; // Use enum
 
+        public DateTime? ApprovalDate { get; set; }
+
+        public string ApprovedBy { get; set; }
+        
+        public string RejectionReason { get; set; }
+
         [Range(0, 100)]
         public double Progress { get; set; }
 

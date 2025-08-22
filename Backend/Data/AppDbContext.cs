@@ -11,6 +11,7 @@ namespace ProjectManagementSystem1.Data
         public DbSet<UserAccessToken> UserAccessTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ApprovalRequest> ApprovalRequests { get; set; }
         public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Milestone> Milestones { get; set; }
@@ -25,10 +26,7 @@ namespace ProjectManagementSystem1.Data
         //public DbSet<TaskDependency> TaskDependencies { get; set; }
         public DbSet<ErpUser> ErpUsers { get; set; }
         public DbSet<MessageReadStatus> MessageReadStatuses { get; set; }
-
         public DbSet<Issue> Issues { get; set; }
-
-
         public DbSet<IndependentTask> IndependentTasks { get; set; }
         public DbSet<PersonalTodo> PersonalTodo { get; set; }
         public DbSet<AddSkill> AddSkills { get; set; }
@@ -229,7 +227,35 @@ namespace ProjectManagementSystem1.Data
             //// Limit hierarchy depth
             //entity.HasCheckConstraint("CK_MaxDepth", "Depth BETWEEN 0 AND 10");
 
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(au => au.Manager)
+                .WithMany(au => au.Subordinates)
+                .HasForeignKey(au => au.ManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Project>()
+                .HasOne(p => p.CreatedBy)
+                .WithMany(au => au.CreatedProjects)
+                .HasForeignKey(p => p.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Project>()
+                .HasOne(p => p.ApprovedBy)
+                .WithMany()
+                .HasForeignKey(p => p.ApprovedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApprovalRequest>()
+                .HasOne(ar => ar.Project)
+                .WithMany(p => p.ApprovalRequests)
+                .HasForeignKey(ar => ar.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApprovalRequest>()
+                .HasOne(ar => ar.Manager)
+                .WithMany(au => au.ApprovalRequests)
+                .HasForeignKey(ar => ar.ManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
 

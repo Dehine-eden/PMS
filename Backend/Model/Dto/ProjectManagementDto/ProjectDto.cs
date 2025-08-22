@@ -18,6 +18,10 @@ namespace ProjectManagementSystem1.Model.Dto.ProjectManagementDto
         public DateTime DueDate { get; set; }
         public string Status { get; set; }
 
+        public DateTime? ApprovalDate { get; set; }
+        public string ApprovedBy { get; set; }
+        public string RejectionReason { get; set; }
+
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public string CreateUser { get; set; }
